@@ -1,0 +1,107 @@
+BEGIN:VCALENDAR
+PRODID:-//Microsoft Corporation//Outlook 16.0 MIMEDIR//EN
+VERSION:2.0
+METHOD:PUBLISH
+X-MS-OLK-FORCEINSPECTOROPEN:TRUE
+BEGIN:VTIMEZONE
+TZID:W. Europe Standard Time
+BEGIN:STANDARD
+DTSTART:16011028T030000
+RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10
+TZOFFSETFROM:+0200
+TZOFFSETTO:+0100
+END:STANDARD
+BEGIN:DAYLIGHT
+DTSTART:16010325T020000
+RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3
+TZOFFSETFROM:+0100
+TZOFFSETTO:+0200
+END:DAYLIGHT
+END:VTIMEZONE
+BEGIN:VEVENT
+CLASS:PUBLIC
+CREATED:20250916T093558Z
+DESCRIPTION:Torsdag 6e November\, Vecka 45. 18:00-21:00. Vi bjuder på Pizz
+	a! 🍕🍕🍕🍕\n\nOBS! Egen dator krävs!\n\n\nFår ni detta 
+	mail så antar jag att ni kan komma. Kan ni inte komma så svara mig på d
+	etta mail asap!\n\n\n\nGithub repo för workshopen\, all information komme
+	r att finnas här:\nhttps://github.com/BusterWarn/WebSockets-Workshop/\n\n
+	\n\nKuratorvägen 2B\, Entré mitt emot IKSU Sport. Hitta hit:\n\nhttps://
+	maps.app.goo.gl/vHpnbePTGkEJMHAd7 <https://eur02.safelinks.protection.outl
+	ook.com/?url=https%3A%2F%2Fmaps.app.goo.gl%2FvHpnbePTGkEJMHAd7&data=05%7C0
+	2%7Cbuster.hultgrenwarn%40tietoevry.com%7Cf9bf35ca8e2c4f8e72e408dd0fc0a2fd
+	%7Ccbede638a3d9459f8f4e24ced73b4e5e%7C0%7C0%7C638684042246822600%7CUnknown
+	%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiI
+	sIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=6AG3SuSyEGiUCAV2IISlB
+	F3DvDwwfB4ILdwxjhUE%2FZM%3D&reserved=0> \n\n\n\n\n\n// Buster\n\n\n
+DTEND;TZID="W. Europe Standard Time":20251106T210000
+DTSTAMP:20250916T093558Z
+DTSTART;TZID="W. Europe Standard Time":20251106T180000
+LAST-MODIFIED:20250916T093558Z
+LOCATION:Kuratorvägen 2B
+PRIORITY:5
+SEQUENCE:0
+SUMMARY;LANGUAGE=en-us:WebSockets Workshop
+TRANSP:OPAQUE
+UID:040000008200E00074C5B7101A82E00800000000A4484C3DEC26DC01000000000000000
+	01000000005361D418613694BB4C4CEEA5A407D73
+X-ALT-DESC;FMTTYPE=text/html:<p style="direction: ltr\; text-align: left\; 
+	text-indent: 0px\; background-color: rgb(255\, 255\, 255)\; margin: 0px\;"
+	 class="elementToProof"><span style="font-family: Aptos\, sans-serif\, ser
+	if\, EmojiFont\; font-size: 11pt\; color: black\;">Torsdag 6e November\, V
+	ecka 45. 18:00-21:00. Vi bjuder på Pizza! </span><span style="font-family
+	: &quot\;Segoe UI Emoji&quot\;\, sans-serif\, serif\, EmojiFont\; font-siz
+	e: 11pt\; color: black\;">🍕🍕🍕🍕</span></p><p style="dir
+	ection: ltr\; text-align: left\; text-indent: 0px\; background-color: rgb(
+	255\, 255\, 255)\; margin: 0px\;" class="elementToProof"><span style="font
+	-family: Aptos\, sans-serif\, serif\, EmojiFont\; font-size: 11pt\; color:
+	 black\;">OBS! Egen dator krävs!</span></p><p style="direction: ltr\; tex
+	t-align: left\; text-indent: 0px\; background-color: rgb(255\, 255\, 255)\
+	; margin: 0px\;" class="elementToProof"><span style="font-family: Aptos\, 
+	sans-serif\, serif\, EmojiFont\; font-size: 11pt\; color: black\;"><br>Få
+	r ni detta mail så antar jag att ni kan komma. Kan ni <b>inte </b>komma s
+	å svara mig på detta mail asap!</span></p><div style="direction: ltr\; t
+	ext-align: left\; text-indent: 0px\; background-color: rgb(255\, 255\, 255
+	)\; margin: 0px\; font-family: Aptos\, sans-serif\, serif\, EmojiFont\; fo
+	nt-size: 11pt\; color: black\;" class="elementToProof"><br><br>Github repo
+	 för workshopen\, all information kommer att finnas här:</div><div style
+	="direction: ltr\; text-align: left\; text-indent: 0px\; background-color:
+	 rgb(255\, 255\, 255)\; margin: 0px\; font-family: Aptos\, sans-serif\, se
+	rif\, EmojiFont\; font-size: 11pt\; color: black\;" class="elementToProof"
+	><a href="https://github.com/BusterWarn/WebSockets-Workshop/">https://gith
+	ub.com/BusterWarn/WebSockets-Workshop/</a></div><p style="direction: ltr\;
+	 text-align: left\; text-indent: 0px\; background-color: rgb(255\, 255\, 2
+	55)\; margin: 0px\;" class="elementToProof"><span style="font-family: Apto
+	s\, sans-serif\, serif\, EmojiFont\; font-size: 11pt\; color: black\;"><br
+	><br>Kuratorvägen 2B\, Entré mitt emot IKSU Sport. Hitta hit:</span></p>
+	<p style="direction: ltr\; text-align: left\; text-indent: 0px\; backgroun
+	d-color: rgb(255\, 255\, 255)\; margin: 0px\;" class="elementToProof"><spa
+	n style="font-family: Aptos\, sans-serif\, serif\, EmojiFont\; font-size: 
+	11pt\; color: rgb(70\, 120\, 134)\;"><u><a style="color: rgb(70\, 120\, 13
+	4)\; margin: 0px\;" data-linkindex="1" data-auth="Verified" originalsrc="h
+	ttps://maps.app.goo.gl/vHpnbePTGkEJMHAd7" title="Original URL: https://map
+	s.app.goo.gl/vHpnbePTGkEJMHAd7. Click or tap if you trust this link." clas
+	s="OWAAutoLink" id="OWAecc3a7b2-c36b-89c6-4943-b80fd73b8425" href="https:/
+	/eur02.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmaps.app.goo.gl
+	%2FvHpnbePTGkEJMHAd7&amp\;data=05%7C02%7Cbuster.hultgrenwarn%40tietoevry.c
+	om%7Cf9bf35ca8e2c4f8e72e408dd0fc0a2fd%7Ccbede638a3d9459f8f4e24ced73b4e5e%7
+	C0%7C0%7C638684042246822600%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydW
+	UsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0
+	%7C%7C%7C&amp\;sdata=6AG3SuSyEGiUCAV2IISlBF3DvDwwfB4ILdwxjhUE%2FZM%3D&amp\
+	;reserved=0">https://maps.app.goo.gl/vHpnbePTGkEJMHAd7</a></u></span></p><
+	p style="direction: ltr\; text-align: left\; text-indent: 0px\; background
+	-color: rgb(255\, 255\, 255)\; margin: 0px\;" class="elementToProof"><span
+	 style="font-family: Aptos\, sans-serif\, serif\, EmojiFont\; font-size: 1
+	1pt\; color: black\;"><br><br><br><br>// Buster</span></p><div style="font
+	-family: Aptos\, Aptos_EmbeddedFont\, Aptos_MSFontService\, Calibri\, Helv
+	etica\, sans-serif\; font-size: 12pt\; color: rgb(0\, 0\, 0)\;" class="ele
+	mentToProof"><br></div>
+X-MICROSOFT-CDO-BUSYSTATUS:BUSY
+X-MICROSOFT-CDO-IMPORTANCE:1
+BEGIN:VALARM
+TRIGGER:-PT15M
+ACTION:DISPLAY
+DESCRIPTION:Reminder
+END:VALARM
+END:VEVENT
+END:VCALENDAR
