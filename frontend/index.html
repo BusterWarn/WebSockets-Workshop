@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+    <style>
+        :root {
+            --primary-purple: #280071;
+            --light-purple: #3d1a8b;
+            --lighter-purple: #5c2eb7;
+            --dark-bg: #1a1a1a;
+            --darker-bg: #0f0f0f;
+            --text-light: #e0e0e0;
+            --text-muted: #b0b0b0;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--primary-purple) 100%);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .chat-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: row;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        /* Members Sidebar */
+        .members-sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: rgba(0, 0, 0, 0.5);
+            border-right: 2px solid var(--light-purple);
+            display: flex;
+            flex-direction: column;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            position: absolute;
+            height: 100vh;
+            z-index: 1000;
+            backdrop-filter: blur(15px);
+        }
+
+        .members-sidebar.show {
+            transform: translateX(0);
+        }
+
+        .sidebar-header {
+            background: var(--primary-purple);
+            padding: 1rem;
+            border-bottom: 1px solid var(--light-purple);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .sidebar-header h5 {
+            color: white;
+            margin: 0;
+            flex: 1;
+            font-weight: 600;
+        }
+
+        .btn-close-sidebar {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+
+        .btn-close-sidebar:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .members-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        .member-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin: 0.25rem 0;
+            border-radius: 10px;
+            background: rgba(40, 0, 113, 0.2);
+            color: var(--text-light);
+            transition: background 0.3s ease;
+        }
+
+        .member-item:hover {
+            background: rgba(40, 0, 113, 0.4);
+        }
+
+        .member-item span:first-of-type {
+            flex: 1;
+            margin-left: 0.5rem;
+        }
+
+        .member-status {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .member-status.online {
+            background: #00ff88;
+            color: #000;
+        }
+
+        .member-status.typing {
+            background: var(--lighter-purple);
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        .member-status.away {
+            background: #ffaa00;
+            color: #000;
+        }
+
+        /* Main Chat Area */
+        .main-chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.3s ease;
+        }
+
+        .members-sidebar.show ~ .main-chat-area {
+            margin-left: 280px;
+        }
+
+        .chat-header {
+            background: var(--primary-purple);
+            border-bottom: 2px solid var(--light-purple);
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(40, 0, 113, 0.3);
+        }
+
+        .chat-header h3 {
+            margin: 0;
+            color: white;
+            font-weight: 600;
+        }
+
+        .online-indicator {
+            width: 10px;
+            height: 10px;
+            background: #00ff88;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        .message-own {
+            text-align: right;
+        }
+
+        .message-bubble {
+            display: inline-block;
+            max-width: 70%;
+            padding: 0.75rem 1rem;
+            border-radius: 20px;
+            word-wrap: break-word;
+        }
+
+        .message-bubble.own {
+            background: var(--primary-purple);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message-bubble.other {
+            background: var(--darker-bg);
+            color: var(--text-light);
+            border: 1px solid var(--light-purple);
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-info {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .system-message {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 0.5rem;
+            background: rgba(40, 0, 113, 0.2);
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .typing-indicator {
+            background: rgba(40, 0, 113, 0.3);
+            border-radius: 20px;
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 0;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .typing-dots {
+            display: inline-block;
+        }
+
+        .typing-dots span {
+            height: 6px;
+            width: 6px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 1px;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .chat-input-container {
+            background: var(--darker-bg);
+            border-top: 2px solid var(--light-purple);
+            padding: 1rem;
+        }
+
+        .input-group {
+            background: var(--dark-bg);
+            border-radius: 25px;
+            border: 2px solid var(--light-purple);
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group:focus-within {
+            border-color: var(--lighter-purple);
+            box-shadow: 0 0 0 0.2rem rgba(40, 0, 113, 0.25);
+        }
+
+        .form-control {
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            padding: 0.75rem 1rem;
+            border-radius: 25px;
+        }
+
+        .form-control:focus {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            color: var(--text-light);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn-send {
+            background: var(--primary-purple);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin: 0.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-send:hover {
+            background: var(--light-purple);
+            transform: scale(1.1);
+            color: white;
+        }
+
+        .btn-send:focus {
+            box-shadow: 0 0 0 0.2rem rgba(40, 0, 113, 0.5);
+        }
+
+        .btn-toggle-sidebar, .btn-members {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--light-purple);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-toggle-sidebar:hover, .btn-members:hover {
+            background: var(--light-purple);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .btn-members {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .members-sidebar {
+                width: 100vw;
+                min-width: 100vw;
+            }
+
+            .members-sidebar.show ~ .main-chat-area {
+                margin-left: 0;
+                display: none;
+            }
+
+            .btn-toggle-sidebar {
+                display: block;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .btn-toggle-sidebar {
+                display: block;
+            }
+        }
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--primary-purple);
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: var(--light-purple);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="chat-container">
+            <!-- Sidebar for Online Members -->
+            <div class="members-sidebar" id="membersSidebar">
+                <div class="sidebar-header">
+                    <h5><i class="bi bi-people me-2"></i>Online Members</h5>
+                    <button class="btn-close-sidebar" id="closeSidebar">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+                <div class="members-list" id="membersList">
+                    <!-- Online members will be populated here -->
+                    <div class="member-item">
+                        <i class="bi bi-person-circle me-2"></i>
+                        <span>You</span>
+                        <span class="member-status online"></span>
+                    </div>
+                    <div class="member-item">
+                        <i class="bi bi-person-circle me-2"></i>
+                        <span>John Doe</span>
+                        <span class="member-status online"></span>
+                    </div>
+                    <div class="member-item">
+                        <i class="bi bi-person-circle me-2"></i>
+                        <span>Alice</span>
+                        <span class="member-status typing">typing...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Chat Area -->
+            <div class="main-chat-area">
+                <!-- Chat Header -->
+                <div class="chat-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <button class="btn-toggle-sidebar me-3" id="toggleSidebar">
+                                <i class="bi bi-list"></i>
+                            </button>
+                            <div>
+                                <h3>
+                                    <i class="bi bi-chat-dots me-2"></i>
+                                    Chat Room
+                                    <span class="online-indicator"></span>
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="text-light d-flex align-items-center">
+                            <button class="btn-members me-2" id="showMembers">
+                                <i class="bi bi-people"></i>
+                                <span id="online-count">0 online</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Messages Container -->
+            <div class="chat-messages" id="messagesContainer">
+                <!-- Sample Messages -->
+                <div class="system-message">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Welcome to the chat room!
+                </div>
+
+                <div class="message">
+                    <div class="message-bubble other">
+                        <div class="fw-bold mb-1" style="font-size: 0.8rem; color: var(--lighter-purple);">John Doe</div>
+                        Hello everyone! How's it going?
+                    </div>
+                    <div class="message-info">2:34 PM</div>
+                </div>
+
+                <div class="message message-own">
+                    <div class="message-bubble own">
+                        Hey there! Welcome to the chat.
+                    </div>
+                    <div class="message-info">2:35 PM</div>
+                </div>
+
+                <div class="system-message">
+                    <i class="bi bi-person-plus me-1"></i>
+                    Alice joined the room
+                </div>
+
+                <!-- Typing Indicator -->
+                <div class="typing-indicator" id="typingIndicator">
+                    <span class="text-muted">Someone is typing</span>
+                    <div class="typing-dots ms-2 d-inline-block">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Container -->
+            <div class="chat-input-container">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="messageInput" placeholder="Type your message..." maxlength="500">
+                    <button class="btn btn-send" type="button" id="sendButton">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Day.js -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.9/dayjs.min.js"></script>
+
+    <!-- Configuration -->
+    <script src="config.js"></script>
+
+    <!-- WebSocket Files -->
+    <script src="messages.js"></script>
+    <script src="typing.js"></script>
+    <script src="presence.js"></script>
+
+    <script>
+        // Check if configuration is available
+        if (!window.chatConfig) {
+            alert('Configuration failed. Please check your settings.');
+        }
+
+        // Main chat functionality
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const messagesContainer = document.getElementById('messagesContainer');
+        const membersSidebar = document.getElementById('membersSidebar');
+        const toggleSidebar = document.getElementById('toggleSidebar');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const showMembers = document.getElementById('showMembers');
+        const membersList = document.getElementById('membersList');
+
+        // Sidebar functionality
+        toggleSidebar.addEventListener('click', () => {
+            membersSidebar.classList.toggle('show');
+        });
+
+        closeSidebar.addEventListener('click', () => {
+            membersSidebar.classList.remove('show');
+        });
+
+        showMembers.addEventListener('click', () => {
+            membersSidebar.classList.toggle('show');
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 &&
+                membersSidebar.classList.contains('show') &&
+                !membersSidebar.contains(e.target) &&
+                !toggleSidebar.contains(e.target) &&
+                !showMembers.contains(e.target)) {
+                membersSidebar.classList.remove('show');
+            }
+        });
+
+        // Send message on Enter key
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Send message on button click
+        sendButton.addEventListener('click', sendMessage);
+
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message) {
+                // Add message to UI (you'll implement WebSocket sending in messages.js)
+                addMessageToUI(message, 'own');
+                messageInput.value = '';
+                scrollToBottom();
+            }
+        }
+
+        function addMessageToUI(message, type, username = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type === 'own' ? 'message-own' : ''}`;
+
+            const currentTime = dayjs().format('h:mm A');
+
+            let messageHTML = '';
+            if (type === 'own') {
+                messageHTML = `
+                    <div class="message-bubble own">
+                        ${message}
+                    </div>
+                    <div class="message-info">${currentTime}</div>
+                `;
+            } else {
+                messageHTML = `
+                    <div class="message-bubble other">
+                        <div class="fw-bold mb-1" style="font-size: 0.8rem; color: var(--lighter-purple);">${username || 'Anonymous'}</div>
+                        ${message}
+                    </div>
+                    <div class="message-info">${currentTime}</div>
+                `;
+            }
+
+            messageDiv.innerHTML = messageHTML;
+            messagesContainer.appendChild(messageDiv);
+
+            // Add animation
+            messageDiv.classList.add('animate__animated', 'animate__fadeInUp');
+        }
+
+        function addSystemMessage(message) {
+            const systemDiv = document.createElement('div');
+            systemDiv.className = 'system-message';
+            systemDiv.innerHTML = `<i class="bi bi-info-circle me-1"></i>${message}`;
+            messagesContainer.appendChild(systemDiv);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Member list management
+        function addMemberToList(username, status = 'online') {
+            const memberDiv = document.createElement('div');
+            memberDiv.className = 'member-item';
+            memberDiv.setAttribute('data-username', username);
+
+            memberDiv.innerHTML = `
+                <i class="bi bi-person-circle me-2"></i>
+                <span>${username}</span>
+                <span class="member-status ${status}">${status}</span>
+            `;
+
+            membersList.appendChild(memberDiv);
+        }
+
+        function removeMemberFromList(username) {
+            const memberItem = membersList.querySelector(`[data-username="${username}"]`);
+            if (memberItem) {
+                memberItem.remove();
+            }
+        }
+
+        function updateMemberStatus(username, status) {
+            const memberItem = membersList.querySelector(`[data-username="${username}"]`);
+            if (memberItem) {
+                const statusElement = memberItem.querySelector('.member-status');
+                statusElement.className = `member-status ${status}`;
+                statusElement.textContent = status;
+            }
+        }
+
+        function updateOnlineCount() {
+            const count = membersList.querySelectorAll('.member-item').length;
+            document.getElementById('online-count').textContent = `${count} online`;
+        }
+
+        // Initialize with current user if config is available
+        if (window.chatConfig && window.chatConfig.username) {
+            // Clear sample members and add current user
+            membersList.innerHTML = '';
+            addMemberToList(window.chatConfig.username + ' (You)', 'online');
+            updateOnlineCount();
+        }
+
+        // Auto-scroll to bottom on load
+        document.addEventListener('DOMContentLoaded', function() {
+            scrollToBottom();
+        });
+
+        // Make functions available globally for WebSocket files
+        window.addMessageToUI = addMessageToUI;
+        window.addSystemMessage = addSystemMessage;
+        window.addMemberToList = addMemberToList;
+        window.removeMemberFromList = removeMemberFromList;
+        window.updateMemberStatus = updateMemberStatus;
+        window.updateOnlineCount = updateOnlineCount;
+    </script>
+</body>
+</html>
