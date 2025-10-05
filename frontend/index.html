@@ -520,7 +520,10 @@
     <!-- Configuration -->
     <script src="config.js"></script>
 
-    <!-- WebSocket Files -->
+    <!-- REST -->
+    <script src="rest_messages.js"></script>
+
+    <!-- websocket files -->
     <script src="messages.js"></script>
     <script src="typing.js"></script>
     <script src="presence.js"></script>
@@ -569,16 +572,18 @@
         messageInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                sendMessage();
+                sendMsg();
             }
         });
 
         // Send message on button click
-        sendButton.addEventListener('click', sendMessage);
+        sendButton.addEventListener('click', sendMsg);
 
-        function sendMessage() {
+        function sendMsg() {
             const message = messageInput.value.trim();
             if (message) {
+                console.log('Sending message:', message, 'url:', window.chatConfig.backend_server_address, 'username:', window.chatConfig.username);
+                sendMessage(window.chatConfig.backend_server_address, window.chatConfig.username, message);
                 // Add message to UI (you'll implement WebSocket sending in messages.js)
                 addMessageToUI(message, 'own');
                 messageInput.value = '';
@@ -586,11 +591,11 @@
             }
         }
 
-        function addMessageToUI(message, type, username = null) {
+        function addMessageToUI(message, type, username = null, currentTime = dayjs().format('h:mm A')) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type === 'own' ? 'message-own' : ''}`;
 
-            const currentTime = dayjs().format('h:mm A');
+            // const currentTime = dayjs().format('h:mm A');
 
             let messageHTML = '';
             if (type === 'own') {
@@ -673,9 +678,17 @@
             updateOnlineCount();
         }
 
-        // Auto-scroll to bottom on load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             scrollToBottom();
+
+            const response = await getAllMessages(window.chatConfig.backend_server_address);
+            const messages = response.messages;
+
+            messages.forEach((msg, index) => {
+                const type = msg.username === window.chatConfig.username ? 'own' : 'other';
+                const timestamp = dayjs(msg.timestamp).format('h:mm A');
+                addMessageToUI(msg.message, type, msg.username, timestamp);
+            });
         });
 
         // Make functions available globally for WebSocket files

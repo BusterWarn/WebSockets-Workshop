@@ -1,10 +1,20 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict
 from datetime import datetime
 import uvicorn
 
 app = FastAPI(title="Chat Backend", version="1.0.0")
+
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins (for development only!)
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allows all headers
+)
 
 # In-memory storage
 chat_messages: List[Dict] = []
@@ -103,6 +113,11 @@ async def get_chat_data(username: str):
         connected_users=users_list
     )
 
+@app.get("/messages")
+async def get_all_messages():
+    """Get all chat messages"""
+    return {"messages": chat_messages}
+
 @app.delete("/clear-chat")
 async def clear_chat():
     """Clear all messages and users (useful for testing)"""
@@ -112,4 +127,4 @@ async def clear_chat():
     return {"status": "success", "message": "Chat cleared"}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=5000)
