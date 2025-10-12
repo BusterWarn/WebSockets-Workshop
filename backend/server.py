@@ -1,9 +1,11 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 from typing import List, Dict
 from datetime import datetime
 import uvicorn
+
+from message_types import *
+from websocket_handlers import *
 
 app = FastAPI(title="Chat Backend", version="1.0.0")
 
@@ -19,18 +21,6 @@ app.add_middleware(
 # In-memory storage
 chat_messages: List[Dict] = []
 connected_users: Dict[str, datetime] = {}
-
-# Pydantic models for request/response
-class ChatMessage(BaseModel):
-    username: str
-    message: str
-
-class UserConnection(BaseModel):
-    username: str
-
-class ChatData(BaseModel):
-    messages: List[Dict]
-    connected_users: List[Dict]
 
 @app.get("/")
 async def root():
@@ -112,6 +102,16 @@ async def get_chat_data(username: str):
         messages=chat_messages,
         connected_users=users_list
     )
+
+manager = WebSocketManager(chat_messages)
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        await manager.connect(websocket)
+    except Exception as e:
+        print(f"Connection error {e}")
 
 @app.get("/messages")
 async def get_all_messages():

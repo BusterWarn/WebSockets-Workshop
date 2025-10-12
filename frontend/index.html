@@ -534,6 +534,9 @@
             alert('Configuration failed. Please check your settings.');
         }
 
+        // Try connecting to the server via WebSockets
+        wsConnectUser(window.chatConfig.backend_server_address, window.chatConfig.username);
+
         // Main chat functionality
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
@@ -583,7 +586,8 @@
             const message = messageInput.value.trim();
             if (message) {
                 console.log('Sending message:', message, 'url:', window.chatConfig.backend_server_address, 'username:', window.chatConfig.username);
-                sendMessage(window.chatConfig.backend_server_address, window.chatConfig.username, message);
+                // sendMessage(window.chatConfig.backend_server_address, window.chatConfig.username, message);
+                wsSendMessage(globalThis.websocket, message);
                 // Add message to UI (you'll implement WebSocket sending in messages.js)
                 addMessageToUI(message, 'own');
                 messageInput.value = '';

@@ -3,7 +3,8 @@
 // Fill in username and server address here to not get prompted!
 const CONFIG = {
     username: '',
-    backend_server_address: '',
+    backend_server_address: 'http://localhost:5000',
+    ws_server_address: 'ws://localhost:5000/ws',
 };
 
 // Function to get configuration values, prompting user if needed
