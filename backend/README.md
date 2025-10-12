@@ -1,10 +1,10 @@
 # Chat Backend API Documentation
 
-## Installation
+## Installation (Without Virtual Environment)
 
 1. **Install Python dependencies:**
    ```bash
-   pip install fastapi uvicorn
+   pip install -r requirements.txt
    ```
 
 2. **Save the code to a file** (e.g., `chat_app.py`)
@@ -18,6 +18,25 @@
 
 4. **View interactive docs** (optional):
    Visit `http://localhost:8000/docs` in your browser
+
+## Running Inside a Virtual Environment
+1. **Create a virtual environment**:
+```bash
+python3 -m venv environment
+```
+
+If 1. does not create a `environment/bin/activate` file run the command again.
+
+2. **Activate the virtual environment**:
+On Linux, this is done with:
+```bash
+source environment/bin/activate
+```
+
+3. **Install Python dependencies:**
+```bash
+pip install -r requirements.txt
+```
 
 ## API Endpoints
 
