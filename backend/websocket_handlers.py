@@ -2,9 +2,13 @@ from fastapi import  WebSocket, WebSocketDisconnect
 from pydantic import ValidationError, TypeAdapter
 from datetime import datetime
 import uuid
+import asyncio
 
 from message_types import *
 from user_database import *
+
+MAX_MESSAGE_LENGTH = 80
+QUEUE_MAX_SIZE = 50
 
 class WebSocketConnection:
     def __init__(self, websocket: WebSocket, uuid: str, username: str, broadcast_func):
@@ -13,7 +17,23 @@ class WebSocketConnection:
         self.username = username
         self.broadcast_func = broadcast_func
 
-    async def websocket_handler(self):
+        self.delivery_queue = asyncio.Queue(maxsize=QUEUE_MAX_SIZE)
+        self.sender_task = asyncio.create_task(self.sender_loop())
+
+    async def sender_loop(self):
+        try:
+            while True:
+                message_json = await self.delivery_queue.get()
+                try:
+                    await self.websocket.send_text(message_json)
+                finally:
+                    self.delivery_queue.task_done()
+        except asyncio.CancelledError:
+            print("Sender loop cancelled")
+        except Exception as e:
+            print(f"Error sending message: {e}")
+
+    async def receive_loop(self):
         try:
             while True:
                 user_msg = await self.websocket.receive_text()
@@ -28,7 +48,7 @@ class WebSocketConnection:
                     break
 
                 if isinstance(user_msg, WsMessage):
-                    await self.ws_message_handler(user_msg)
+                    await self.send_message(user_msg)
                 else:
                     print(f"Got unhandled event: {user_msg}")
 
@@ -36,13 +56,29 @@ class WebSocketConnection:
             print("User disconnected")
             return
 
-    async def ws_message_handler(self, user_msg: WsMessage):
-        if len(user_msg.message) > 80:
+    async def queue_message(self, message_json: str):
+        try:
+            self.delivery_queue.put_nowait(message_json)
+        except asyncio.QueueFull:
+            print(f"Message queue is full, closing connection for {self.username}")
+            self.delivery_queue.shutdown(immediate=True)
+
+    async def send_message(self, user_msg: WsMessage):
+        if len(user_msg.message) > MAX_MESSAGE_LENGTH:
             await self.websocket.send_text(WsSystemMessage(message="Message too long, I refuse to broadcast this").model_dump_json())
             return
 
         print(f"Received message from '{self.username}' ({self.user_uuid}): {user_msg}")
         await self.broadcast_func(self, user_msg)
+
+    async def close(self):
+        try:
+            if not self.sender_task.done():
+                self.sender_task.cancel()
+                await self.sender_task
+            await self.websocket.close()
+        except Exception as e:
+            print(f"Error closing websocket: {e}")
 
 class WebSocketManager:
     def __init__(self, chat_messages: List, user_database: UserDatabase):
@@ -65,8 +101,8 @@ class WebSocketManager:
             print(f"userConnectionReq {e}")
             await websocket.send_text(UserConnectionResponse(response=f"Invalid request {e}").model_dump_json())
             return
-        if len(userConnectionReq.username) > 80:
-            print(f"Username too long: '{userConnectionReq.username[0:80]}'...")
+        if len(userConnectionReq.username) > MAX_MESSAGE_LENGTH:
+            print(f"Username too long: '{userConnectionReq.username[0:MAX_MESSAGE_LENGTH]}'...")
             await websocket.send_text(UserConnectionResponse(response="Username too long").model_dump_json())
             return
 
@@ -83,15 +119,18 @@ class WebSocketManager:
         if "past_chats" in userConnectionReq.subscribe_for_events:
             await self.send_past_chats(user)
 
-        await user.websocket_handler()
+        try:
+            await user.receive_loop()
+        finally:
+            # Remove the websocket from our lists
+            print(f"User '{username}' disconnected, cleaning up")
+            await user.close()
+            self.websockets.pop(user.user_uuid)
 
-        # Remove the websocket from our lists
-        print(f"User '{username}' disconnected, cleaning up")
-        del self.websockets[user.user_uuid]
 
     async def send_past_chats(self, sender: WebSocketConnection):
         chats = self.chat_messages.copy()
-        await sender.websocket.send_text(WsMessageHistory(messages=chats).model_dump_json())
+        await sender.queue_message(WsMessageHistory(messages=chats).model_dump_json())
 
     async def broadcast(self, sender: WebSocketConnection, message: WsMessage):
         new_message = {
@@ -101,14 +140,12 @@ class WebSocketManager:
         }
         self.chat_messages.append(new_message)
 
-        # It's not safe to iterate the websockets dict as the send functions
-        # are async, so we 'freeze' the list of receivers before broadcasting the message
-        receivers = list(self.websockets.keys())
-        for user in receivers:
+        users = list(self.websockets.keys())
+        for user in users:
             if user not in self.websockets:
                 continue
             user = self.websockets[user]
             if user.user_uuid != sender.user_uuid:
                 print(f"Broadcasting message {message} to: {user}" )
-                await user.websocket.send_text(message.model_dump_json())
+                await user.queue_message(message.model_dump_json())
 
