@@ -103,7 +103,7 @@ async def get_chat_data(username: str):
         connected_users=users_list
     )
 
-manager = WebSocketManager(chat_messages)
+manager = WebSocketManager(chat_messages, UserDatabase())
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

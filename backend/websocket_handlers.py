@@ -1,9 +1,10 @@
 from fastapi import  WebSocket, WebSocketDisconnect
-from pydantic import ValidationError
+from pydantic import ValidationError, TypeAdapter
 from datetime import datetime
 import uuid
 
 from message_types import *
+from user_database import *
 
 class WebSocketConnection:
     def __init__(self, websocket: WebSocket, uuid: str, username: str, broadcast_func):
@@ -21,25 +22,32 @@ class WebSocketConnection:
                     break
 
                 try:
-                    user_msg = WsMessage.model_validate_json(user_msg)
+                    user_msg = TypeAdapter(WsEvent).validate_json(user_msg)
                 except ValidationError as e:
                     print(f"Invalid message {e}")
                     break
 
-                if len(user_msg.message) > 80:
-                    await self.websocket.send_text(WsSystemMessage(message="Message too long, I refuse to broadcast this").model_dump_json())
-                    continue
-
-                print(f"Received message from '{self.username}' ({self.user_uuid}): {user_msg}")
-                await self.broadcast_func(self, user_msg)
+                if isinstance(user_msg, WsMessage):
+                    await self.ws_message_handler(user_msg)
+                else:
+                    print(f"Got unhandled event: {user_msg}")
 
         except WebSocketDisconnect:
             print("User disconnected")
             return
 
+    async def ws_message_handler(self, user_msg: WsMessage):
+        if len(user_msg.message) > 80:
+            await self.websocket.send_text(WsSystemMessage(message="Message too long, I refuse to broadcast this").model_dump_json())
+            return
+
+        print(f"Received message from '{self.username}' ({self.user_uuid}): {user_msg}")
+        await self.broadcast_func(self, user_msg)
+
 class WebSocketManager:
-    def __init__(self, chat_messages: List):
+    def __init__(self, chat_messages: List, user_database: UserDatabase):
         self.websockets = {}
+        self.database = user_database
         self.chat_messages = chat_messages
 
     async def connect(self, websocket: WebSocket):

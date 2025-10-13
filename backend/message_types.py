@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict, Literal
+from typing import List, Dict, Literal, Union, Annotated
 
 
 # Pydantic models for request/response
@@ -67,5 +67,4 @@ class WsUserLeaveEvent(BaseModel):
     event_type: Literal["user_leave"] = "user_leave"
     username: str
 
-class WsEvent(BaseModel):
-    event_type: WsMessage | WsTypingEvent | WsUserJoinEvent | WsUserLeaveEvent = Field(discriminator="event_type")
+WsEvent = Annotated[Union[WsMessage, WsTypingEvent, WsUserJoinEvent, WsUserLeaveEvent], Field(discriminator="event_type")]
