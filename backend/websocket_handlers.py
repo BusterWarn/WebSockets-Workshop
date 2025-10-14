@@ -1,5 +1,6 @@
 from fastapi import  WebSocket, WebSocketDisconnect
 from pydantic import ValidationError, TypeAdapter
+from typing import Callable
 from datetime import datetime
 import uuid
 import asyncio
@@ -11,7 +12,7 @@ MAX_MESSAGE_LENGTH = 80
 QUEUE_MAX_SIZE = 50
 
 class WebSocketConnection:
-    def __init__(self, websocket: WebSocket, uuid: str, username: str, broadcast_func):
+    def __init__(self, websocket: WebSocket, uuid: str, username: str, broadcast_func: Callable):
         self.websocket = websocket
         self.user_uuid = uuid
         self.username = username
@@ -73,10 +74,13 @@ class WebSocketConnection:
 
     async def close(self):
         try:
+            # Broadcast that the user has left before closing anything
+            print(f"User '{self.username}' ({self.user_uuid}) disconnected, cleaning up")
+            await self.broadcast_func(self, WsUserLeaveEvent(username=self.username))
+
             if not self.sender_task.done():
                 self.sender_task.cancel()
                 await self.sender_task
-            await self.websocket.close()
         except Exception as e:
             print(f"Error closing websocket: {e}")
 
@@ -144,11 +148,12 @@ class WebSocketManager:
             self.chat_messages.append(new_message)
 
         users = list(self.websockets.keys())
+        print(f"Broadcasting event {message} from: {sender.username} ({sender.user_uuid}), to: {users}")
         for user in users:
             if user not in self.websockets:
                 continue
             user = self.websockets[user]
             if user.user_uuid != sender.user_uuid:
-                print(f"Broadcasting message {message} to: {user}" )
+                print(f"Broadcasting message {message} to: {user.username} ({user.user_uuid})" )
                 await user.queue_message(message.model_dump_json())
 
