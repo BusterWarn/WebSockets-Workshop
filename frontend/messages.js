@@ -60,6 +60,6 @@ function wsReceiveMessage(message) {
             window.addMessageToUI(message.message, own, message.username);
             break;
         default:
-            console.log('Unknown event type:', message.event_type);
+            console.log('Received unknown message:' + JSON.stringify(message));
     }
 }
