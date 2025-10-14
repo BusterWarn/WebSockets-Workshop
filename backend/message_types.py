@@ -60,7 +60,7 @@ class WsMessageHistory(BaseModel):
     messages: List[Dict]
 class WsTypingEvent(BaseModel):
     event_type: Literal["typing"] = "typing"
-    message: str
+    username: str
 class WsSystemMessage(BaseModel):
     event_type: Literal["system"] = "system"
     severity: Literal["success", "info", "warning", "error"]
