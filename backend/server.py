@@ -48,9 +48,6 @@ async def send_message(chat_msg: ChatMessage):
     # Add to chat messages
     chat_messages.append(new_message)
 
-    # Update user's last seen time
-    connected_users[username] = datetime.now()
-
     return {"status": "success", "message": "Message sent"}
 
 @app.get("/chat-data/{username}")

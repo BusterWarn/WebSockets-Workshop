@@ -75,4 +75,15 @@ class WsUserLeaveEvent(BaseModel):
     event_type: Literal["user_leave"] = "user_leave"
     username: str
 
-WsEvent = Annotated[Union[WsMessage, WsTypingEvent, WsUserJoinEvent, WsUserLeaveEvent], Field(discriminator="event_type")]
+WsEvent = Annotated[
+    Union[
+        WsMessage,
+        WsMessageHistory,
+        WsTypingEvent,
+        WsSystemMessage,
+        WsUsersOnline,
+        WsUserJoinEvent,
+        WsUserLeaveEvent,
+    ],
+    Field(discriminator="event_type"),
+]

@@ -46,14 +46,20 @@ class WebSocketConnection:
             while True:
                 user_msg = await self.websocket.receive_text()
                 if not user_msg:
-                    print("User sent us trash")
-                    break
+                    print(f"Received empty message from {self.id()}, ignoring")
+                    continue
 
                 try:
                     user_msg = TypeAdapter(WsEvent).validate_json(user_msg)
                 except ValidationError as e:
                     print(f"Invalid message {e}")
-                    break
+                    await self.websocket.send_text(
+                        WsSystemMessage(
+                            message="Invalid message format",
+                            severity="error"
+                        ).model_dump_json()
+                    )
+                    continue
 
                 if isinstance(user_msg, WsMessage):
                     await self.send_message(user_msg)
@@ -68,7 +74,8 @@ class WebSocketConnection:
             self.delivery_queue.put_nowait(message_json)
         except asyncio.QueueFull:
             print(f"Message queue is full, closing connection for {self.id()}")
-            asyncio.create_task(self.close())
+            if not self.closed:
+                asyncio.create_task(self.close())
 
     async def send_message(self, user_msg: WsMessage):
         if len(user_msg.message) > MAX_MESSAGE_LENGTH:

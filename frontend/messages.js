@@ -2,6 +2,7 @@ globalThis.websocket = null;
 
 const WS_EVENT_TYPES = {
     message: 'message',
+    message_history: 'message_history',
     typing: 'typing',
     system: 'system',
     users_online: 'users_online',
