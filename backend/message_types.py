@@ -50,6 +50,7 @@ class WsAddUserToGroupRequest(BaseModel):
 ### The server will send one of these messages to the client
 class WsMessage(BaseModel):
     event_type: Literal["message"] = "message"
+    username: str
     message: str
 class WsMessageHistory(BaseModel):
     event_type: Literal["message_history"] = "message_history"

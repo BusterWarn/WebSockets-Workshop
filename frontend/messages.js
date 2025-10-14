@@ -48,7 +48,8 @@ async function wsSendMessage(websocket, message) {
     websocket.send(JSON.stringify(
         {
             event_type: WS_EVENT_TYPES.message,
-            message: message
+            username: window.chatConfig.username,
+            message: message,
         }
     ))
 }
@@ -56,7 +57,8 @@ async function wsSendMessage(websocket, message) {
 function wsReceiveMessage(message) {
     switch (message.event_type) {
         case WS_EVENT_TYPES.message:
-            window.addMessageToUI(message.message);
+            const own = message.username === window.chatConfig.username;
+            window.addMessageToUI(message.message, own, message.username);
             break;
         default:
             console.log('Unknown event type:', message.event_type);
