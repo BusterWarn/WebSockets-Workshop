@@ -20,8 +20,6 @@ class ChatData(BaseModel):
 # WebSockets protocol messages
 class WsConnectionRequest(BaseModel):
     username: str
-    # past_chats, typing, user_event
-    subscribe_for_events: List[str]
 class WsConnectionResponse(BaseModel):
     response: str
 

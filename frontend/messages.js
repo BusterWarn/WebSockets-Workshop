@@ -20,7 +20,6 @@ async function wsConnectUser(serverUrl, username) {
             console.log('WebSocket connection opened');
             globalThis.websocket.send(JSON.stringify({
                 username: username,
-                subscribe_for_events: []
             }));
         });
 

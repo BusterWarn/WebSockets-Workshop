@@ -116,8 +116,10 @@ class WebSocketManager:
 
         print(f"User '{username}' connected, starting the WebSocket handler")
 
-        if "past_chats" in userConnectionReq.subscribe_for_events:
-            await self.send_past_chats(user)
+        await self.send_past_chats(user)
+
+        # Notify other users that a new user has joined
+        await self.broadcast(user, WsUserJoinEvent(username=username))
 
         try:
             await user.receive_loop()
@@ -132,13 +134,14 @@ class WebSocketManager:
         chats = self.chat_messages.copy()
         await sender.queue_message(WsMessageHistory(messages=chats).model_dump_json())
 
-    async def broadcast(self, sender: WebSocketConnection, message: WsMessage):
-        new_message = {
-            "username": sender.username,
-            "message": message.message,
-            "timestamp": datetime.now().isoformat()
-        }
-        self.chat_messages.append(new_message)
+    async def broadcast(self, sender: WebSocketConnection, message: WsEvent):
+        if isinstance(message, WsMessage):
+            new_message = {
+                "username": sender.username,
+                "message": message.message,
+                "timestamp": datetime.now().isoformat()
+            }
+            self.chat_messages.append(new_message)
 
         users = list(self.websockets.keys())
         for user in users:
