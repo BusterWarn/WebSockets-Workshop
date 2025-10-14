@@ -20,6 +20,10 @@ class WebSocketConnection:
 
         self.delivery_queue = asyncio.Queue(maxsize=QUEUE_MAX_SIZE)
         self.sender_task = asyncio.create_task(self.sender_loop())
+        self.closed = False
+
+    def id(self) -> str:
+        return f"'{self.username}' ({self.user_uuid})"
 
     async def sender_loop(self):
         try:
@@ -33,6 +37,8 @@ class WebSocketConnection:
             print("Sender loop cancelled")
         except Exception as e:
             print(f"Error sending message: {e}")
+        finally:
+            print(f"Sender loop finished for {self.id()}")
 
     async def receive_loop(self):
         try:
@@ -54,28 +60,31 @@ class WebSocketConnection:
                     print(f"Got unhandled event: {user_msg}")
 
         except WebSocketDisconnect:
-            print("User disconnected")
-            return
+            print(f"User {self.id()} disconnected, exiting receive_loop")
 
     async def queue_message(self, message_json: str):
         try:
             self.delivery_queue.put_nowait(message_json)
         except asyncio.QueueFull:
-            print(f"Message queue is full, closing connection for {self.username}")
-            self.delivery_queue.shutdown(immediate=True)
+            print(f"Message queue is full, closing connection for {self.id()}")
+            asyncio.create_task(self.close())
 
     async def send_message(self, user_msg: WsMessage):
         if len(user_msg.message) > MAX_MESSAGE_LENGTH:
-            await self.websocket.send_text(WsSystemMessage(message="Message too long, I refuse to broadcast this").model_dump_json())
+            await self.websocket.send_text(WsSystemMessage(message="Message too long, I refuse to broadcast this", severity="error").model_dump_json())
             return
 
-        print(f"Received message from '{self.username}' ({self.user_uuid}): {user_msg}")
+        print(f"Received message from {self.id()}: {user_msg}")
         await self.broadcast_func(self, user_msg)
 
     async def close(self):
+        if self.closed:
+            print(f"Connection for {self.id()} already closed, skipping")
+            return
+        self.closed = True
         try:
             # Broadcast that the user has left before closing anything
-            print(f"User '{self.username}' ({self.user_uuid}) disconnected, cleaning up")
+            print(f"Closing connection for {self.id()} ")
             await self.broadcast_func(self, WsUserLeaveEvent(username=self.username))
 
             if not self.sender_task.done():
@@ -129,7 +138,7 @@ class WebSocketManager:
             await user.receive_loop()
         finally:
             # Remove the websocket from our lists
-            print(f"User '{username}' disconnected, cleaning up")
+            print(f"User {user.id()} disconnected, cleaning up")
             await user.close()
             self.websockets.pop(user.user_uuid)
 

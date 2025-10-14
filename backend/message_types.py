@@ -58,6 +58,7 @@ class WsTypingEvent(BaseModel):
     message: str
 class WsSystemMessage(BaseModel):
     event_type: Literal["system"] = "system"
+    severity: Literal["success", "info", "warning", "error"]
     message: str
 class WsUserJoinEvent(BaseModel):
     event_type: Literal["user_join"] = "user_join"
