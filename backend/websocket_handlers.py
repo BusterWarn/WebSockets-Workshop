@@ -21,6 +21,7 @@ class WebSocketConnection:
         self.delivery_queue = asyncio.Queue(maxsize=QUEUE_MAX_SIZE)
         self.sender_task = asyncio.create_task(self.sender_loop())
         self.closed = False
+        self.join_time = datetime.now()
 
     def id(self) -> str:
         return f"'{self.username}' ({self.user_uuid})"
@@ -130,6 +131,7 @@ class WebSocketManager:
         print(f"User '{username}' connected, starting the WebSocket handler")
 
         await self.send_past_chats(user)
+        await self.send_online_users(user)
 
         # Notify other users that a new user has joined
         await self.broadcast(user, WsUserJoinEvent(username=username))
@@ -146,6 +148,10 @@ class WebSocketManager:
     async def send_past_chats(self, sender: WebSocketConnection):
         chats = self.chat_messages.copy()
         await sender.queue_message(WsMessageHistory(messages=chats).model_dump_json())
+
+    async def send_online_users(self, sender: WebSocketConnection):
+        users = self.get_online_users()
+        await sender.queue_message(WsOnlineUsers(users=users).model_dump_json())
 
     async def broadcast(self, sender: WebSocketConnection, message: WsEvent):
         if isinstance(message, WsMessage):
@@ -165,4 +171,13 @@ class WebSocketManager:
             if user.user_uuid != sender.user_uuid:
                 print(f"Broadcasting message {message} to: {user.username} ({user.user_uuid})" )
                 await user.queue_message(message.model_dump_json())
+
+    def get_online_users(self) -> List[WsUserStatus]:
+        users: List[WsUserStatus] = []
+        for user in self.websockets:
+            user = self.websockets[user]
+            users.append(WsUserStatus(username=user.username,
+                connected_at=user.join_time.isoformat()
+            ))
+        return users
 

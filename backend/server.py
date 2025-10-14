@@ -20,36 +20,11 @@ app.add_middleware(
 
 # In-memory storage
 chat_messages: List[Dict] = []
-connected_users: Dict[str, datetime] = {}
+manager = WebSocketManager(chat_messages, UserDatabase())
 
 @app.get("/")
 async def root():
     return {"message": "Chat Backend API", "endpoints": ["/connect", "/send-message"]}
-
-@app.post("/connect")
-async def connect_user(user: UserConnection):
-    """Connect a user and get all chat data (messages + connected users)"""
-    username = user.username.strip()
-
-    if not username:
-        raise HTTPException(status_code=400, detail="Username cannot be empty")
-
-    # Add user to connected users (or update their last seen time)
-    connected_users[username] = datetime.now()
-
-    # Format connected users for response
-    users_list = [
-        {
-            "username": user,
-            "connected_at": timestamp.isoformat()
-        }
-        for user, timestamp in connected_users.items()
-    ]
-
-    return ChatData(
-        messages=chat_messages,
-        connected_users=users_list
-    )
 
 @app.post("/send-message")
 async def send_message(chat_msg: ChatMessage):
@@ -102,8 +77,6 @@ async def get_chat_data(username: str):
         messages=chat_messages,
         connected_users=users_list
     )
-
-manager = WebSocketManager(chat_messages, UserDatabase())
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

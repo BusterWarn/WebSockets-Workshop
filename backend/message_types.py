@@ -44,6 +44,11 @@ class WsAddUserToGroupRequest(BaseModel):
     group_name: str
     username: str
 
+## Base structures
+class WsUserStatus(BaseModel):
+    username: str
+    connected_at: str
+
 ## Chat
 ### The server will send one of these messages to the client
 class WsMessage(BaseModel):
@@ -53,6 +58,9 @@ class WsMessage(BaseModel):
 class WsMessageHistory(BaseModel):
     event_type: Literal["message_history"] = "message_history"
     messages: List[Dict]
+class WsOnlineUsers(BaseModel):
+    event_type: Literal["online_users"] = "online_users"
+    users: List[WsUserStatus]
 class WsTypingEvent(BaseModel):
     event_type: Literal["typing"] = "typing"
     message: str
