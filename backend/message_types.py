@@ -58,9 +58,6 @@ class WsMessage(BaseModel):
 class WsMessageHistory(BaseModel):
     event_type: Literal["message_history"] = "message_history"
     messages: List[Dict]
-class WsOnlineUsers(BaseModel):
-    event_type: Literal["online_users"] = "online_users"
-    users: List[WsUserStatus]
 class WsTypingEvent(BaseModel):
     event_type: Literal["typing"] = "typing"
     message: str
@@ -68,6 +65,9 @@ class WsSystemMessage(BaseModel):
     event_type: Literal["system"] = "system"
     severity: Literal["success", "info", "warning", "error"]
     message: str
+class WsUsersOnline(BaseModel):
+    event_type: Literal["users_online"] = "users_online"
+    users: List[WsUserStatus]
 class WsUserJoinEvent(BaseModel):
     event_type: Literal["user_join"] = "user_join"
     username: str

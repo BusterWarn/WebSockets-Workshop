@@ -150,8 +150,8 @@ class WebSocketManager:
         await sender.queue_message(WsMessageHistory(messages=chats).model_dump_json())
 
     async def send_online_users(self, sender: WebSocketConnection):
-        users = self.get_online_users()
-        await sender.queue_message(WsOnlineUsers(users=users).model_dump_json())
+        users = self.get_users_online()
+        await sender.queue_message(WsUsersOnline(users=users).model_dump_json())
 
     async def broadcast(self, sender: WebSocketConnection, message: WsEvent):
         if isinstance(message, WsMessage):
@@ -172,7 +172,7 @@ class WebSocketManager:
                 print(f"Broadcasting message {message} to: {user.username} ({user.user_uuid})" )
                 await user.queue_message(message.model_dump_json())
 
-    def get_online_users(self) -> List[WsUserStatus]:
+    def get_users_online(self) -> List[WsUserStatus]:
         users: List[WsUserStatus] = []
         for user in self.websockets:
             user = self.websockets[user]

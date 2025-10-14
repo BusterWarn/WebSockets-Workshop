@@ -4,6 +4,7 @@ const WS_EVENT_TYPES = {
     message: 'message',
     typing: 'typing',
     system: 'system',
+    users_online: 'users_online',
     user_join: 'user_join',
     user_leave: 'user_leave',
 };
