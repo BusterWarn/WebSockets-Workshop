@@ -593,6 +593,11 @@
 
         // Send message on Enter key
         messageInput.addEventListener('keypress', function(e) {
+
+            if (messageInput.value.length > 80 && messageInput.value.length % 5 === 0) {
+              Toast.warning(`Message might be to long. Current length: ${messageInput.value.length}`);
+            }
+
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMsg();
