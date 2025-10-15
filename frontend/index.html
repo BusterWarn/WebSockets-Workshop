@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <!-- Animate.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Toastify.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
     <style>
         :root {
@@ -21,6 +23,8 @@
             --darker-bg: #0f0f0f;
             --text-light: #e0e0e0;
             --text-muted: #b0b0b0;
+            --orange-brown: #b76d2e;
+            --dark-red: #8b1a1a;
         }
 
         body {
@@ -530,10 +534,13 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Day.js -->
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.9/dayjs.min.js"></script>
+    <!-- Toastify.js -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
     <!-- Configuration -->
     <script src="config.js"></script>
-
+    <!-- Custom Tosasts -->
+    <script src="toasts.js"></script>
     <!-- REST -->
     <script src="rest_messages.js"></script>
 
@@ -543,9 +550,8 @@
     <script src="presence.js"></script>
 
     <script>
-        // Check if configuration is available
         if (!window.chatConfig) {
-            alert('Configuration failed. Please check your settings.');
+            Toast.error('Configuration failed. Please check your settings.');
         }
 
         // Try connecting to the server via WebSockets
@@ -598,15 +604,20 @@
 
         function sendMsg() {
             const message = messageInput.value.trim();
-            if (message) {
-                console.log('Sending message:', message, 'url:', window.chatConfig.backend_server_address, 'username:', window.chatConfig.username);
-                // sendMessage(window.chatConfig.backend_server_address, window.chatConfig.username, message);
-                wsSendMessage(globalThis.websocket, message);
-                // Add message to UI (you'll implement WebSocket sending in messages.js)
+            if (!message) {
+                Toast.warning('No message to send.');
+                return;
+            }
+
+            try {
+                sendMessage(window.chatConfig.backend_server_address, window.chatConfig.username, message);
+                // wsSendMessage(globalThis.websocket, message); With websockets
                 addMessageToUI(message, 'own');
                 messageInput.value = '';
-                scrollToBottom();
+            } catch (error) {
+                Toast.error(`Error sending message: ${error}`);
             }
+            scrollToBottom();
         }
 
         function addMessageToUI(message, type, username = null, currentTime = dayjs().format('h:mm A')) {
