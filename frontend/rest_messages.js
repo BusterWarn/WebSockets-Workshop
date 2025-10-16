@@ -38,7 +38,6 @@ async function connectUser(serverUrl, username) {
  * @returns {Promise<Object>} - Promise resolving to success response or error
  */
 async function sendMessage(serverUrl, username, message) {
-    console.log('Sending messageo:', message, 'url:', window.chatConfig.backend_server_address, 'username:', window.chatConfig.username);
     try {
         const response = await fetch(`${serverUrl}/send-message`, {
             method: 'POST',
@@ -57,6 +56,7 @@ async function sendMessage(serverUrl, username, message) {
 
         return await response.json();
     } catch (error) {
+        Toast.error(`Error sending message: ${error}`);
         console.error('Error sending message:', error);
         throw error;
     }
@@ -74,9 +74,9 @@ async function getAllMessages(serverUrl) {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-
         return await response.json();
     } catch (error) {
+        Toast.error(`Error getting messages: ${error}`);
         console.error('Error getting messages:', error);
         throw error;
     }
@@ -98,7 +98,8 @@ async function getChatData(serverUrl, username) {
 
         return await response.json();
     } catch (error) {
-        console.error('Error getting chat data:', error);
+        Toast.error(`Error getting chat data: ${error}`);
+        console.error(`Error getting chat data: ${error}`);
         throw error;
     }
 }
