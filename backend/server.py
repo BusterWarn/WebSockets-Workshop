@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from typing import List, Dict
 from datetime import datetime
 import uvicorn
@@ -8,6 +9,7 @@ from message_types import *
 from websocket_handlers import *
 
 app = FastAPI(title="Chat Backend", version="1.0.0")
+app.mount("/chat/", StaticFiles(directory="../frontend"), name="chat")
 
 # Enable CORS
 app.add_middleware(
