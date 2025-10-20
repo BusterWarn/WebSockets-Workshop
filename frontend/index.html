@@ -704,13 +704,17 @@
             document.getElementById('online-count').textContent = `${count} online`;
         }
 
-        // Initialize with current user if config is available
-        if (window.chatConfig && window.chatConfig.username) {
-            // Clear sample members and add current user
-            membersList.innerHTML = '';
-            addMemberToList(window.chatConfig.username + ' (You)', 'online');
-            updateOnlineCount();
+        function addSelfAsOnline() {
+            // Initialize with current user if config is available
+            if (window.chatConfig && window.chatConfig.username) {
+                // Clear sample members and add current user
+                membersList.innerHTML = '';
+                addMemberToList(window.chatConfig.username + ' (You)', 'online');
+                updateOnlineCount();
+            }
         }
+
+        addSelfAsOnline();
 
         document.addEventListener('DOMContentLoaded', async function() {
             scrollToBottom();

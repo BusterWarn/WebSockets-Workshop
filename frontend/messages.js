@@ -61,7 +61,43 @@ function wsReceiveMessage(message) {
             const own = message.username === window.chatConfig.username;
             window.addMessageToUI(message.message, own, message.username);
             break;
+        case WS_EVENT_TYPES.users_online:
+            window.addSelfAsOnline();
+            message.users.forEach((user) => {
+                window.addMemberToList(user.username, user.status);
+            });
+            window.updateOnlineCount();
+            break;
+        case WS_EVENT_TYPES.user_join:
+            Toast.info(`User ${message.username} joined the chat`);
+            window.addMemberToList(message.username, 'online');
+            window.updateOnlineCount();
+            break;
+        case WS_EVENT_TYPES.user_leave:
+            Toast.info(`User ${message.username} left the chat`);
+            window.removeMemberFromList(message.username);
+            window.updateOnlineCount();
+            break;
+        case WS_EVENT_TYPES.system:
+            createToastForSeverity(message.message, message.severity);
+            break;
         default:
             console.log('Received unknown message:' + JSON.stringify(message));
+    }
+}
+
+function createToastForSeverity(message, severity) {
+    switch (severity) {
+        case 'success':
+            Toast.success(message);
+        case 'info':
+            Toast.info(message);
+            break;
+        case 'warning':
+            Toast.warning(message);
+            break;
+        case 'error':
+            Toast.error(message);
+            break;
     }
 }
