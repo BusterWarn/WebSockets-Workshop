@@ -9,6 +9,7 @@ from message_types import *
 from user_database import *
 
 MAX_MESSAGE_LENGTH = 80
+MAX_USERNAME_LENGTH = 20
 QUEUE_MAX_SIZE = 50
 
 class WebSocketConnection:
@@ -124,9 +125,7 @@ class WebSocketManager:
             print(f"userConnectionReq {e}")
             await websocket.send_text(UserConnectionResponse(response=f"Invalid request {e}").model_dump_json())
             return
-        if len(userConnectionReq.username) > MAX_MESSAGE_LENGTH:
-            print(f"Username too long: '{userConnectionReq.username[0:MAX_MESSAGE_LENGTH]}'...")
-            await websocket.send_text(UserConnectionResponse(response="Username too long").model_dump_json())
+        if not await self.validate_username(websocket, userConnectionReq.username):
             return
 
         # TODO: Check that the username is not already in use or is a registered user
@@ -139,6 +138,7 @@ class WebSocketManager:
 
         print(f"User '{username}' connected, starting the WebSocket handler")
 
+        await self.send_connection_response(user)
         await self.send_past_chats(user)
         await self.send_online_users(user)
 
@@ -153,13 +153,37 @@ class WebSocketManager:
             await user.close()
             self.websockets.pop(user.user_uuid)
 
+    async def validate_username(self, user_websocket, username: str) -> bool:
+        if len(username) > MAX_USERNAME_LENGTH:
+            print(f"Username is too long: '{username[0:MAX_USERNAME_LENGTH]}'...")
+            await user_websocket.send_text(WsConnectionReject(response="Username is too long").model_dump_json())
+            return False
+        if not username.isalnum():
+            print(f"Username contains invalid characters: '{username[0:MAX_USERNAME_LENGTH]}'...")
+            await user_websocket.send_text(WsConnectionReject(response="Username contains invalid characters").model_dump_json())
+            return False
+        if self.is_username_taken(username):
+            print(f"Username is already taken: '{username[0:MAX_USERNAME_LENGTH]}'...")
+            await user_websocket.send_text(WsConnectionReject(response="Username is already taken").model_dump_json())
+            return False
 
+        return True
+
+    def is_username_taken(self, username: str) -> bool:
+        for user in self.websockets:
+            if self.websockets[user].username == username:
+                return True
+        return False
+
+    async def send_connection_response(self, user: WebSocketConnection):
+        await user.queue_message(WsConnectionResponse(username=user.username, user_id=user.user_uuid).model_dump_json())
     async def send_past_chats(self, sender: WebSocketConnection):
         chats = self.chat_messages.copy()
         await sender.queue_message(WsMessageHistory(messages=chats).model_dump_json())
 
     async def send_online_users(self, sender: WebSocketConnection):
         users = self.get_users_online()
+        users = [user for user in users if user.username != sender.username]
         await sender.queue_message(WsUsersOnline(users=users).model_dump_json())
 
     async def broadcast(self, sender: WebSocketConnection, message: WsEvent):
@@ -203,4 +227,3 @@ class WebSocketManager:
                 connected_at=user.join_time.isoformat()
             ))
         return users
-

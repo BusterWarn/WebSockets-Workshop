@@ -17,12 +17,6 @@ class ChatData(BaseModel):
     messages: List[Dict]
     connected_users: List[Dict]
 
-# WebSockets protocol messages
-class WsConnectionRequest(BaseModel):
-    username: str
-class WsConnectionResponse(BaseModel):
-    response: str
-
 ## Login/Register
 class WsRegisterRequest(BaseModel):
     username: str
@@ -50,7 +44,17 @@ class WsUserStatus(BaseModel):
     connected_at: str
 
 ## Chat
-### The server will send one of these messages to the client
+# WebSockets protocol messages
+class WsConnectionRequest(BaseModel):
+    event_type: Literal["connection_request"] = "connection_request"
+    username: str
+class WsConnectionResponse(BaseModel):
+    event_type: Literal["connection_response"] = "connection_response"
+    username: str
+    user_id: str
+class WsConnectionReject(BaseModel):
+    event_type: Literal["connection_reject"] = "connection_reject"
+    response: str
 class WsMessage(BaseModel):
     event_type: Literal["message"] = "message"
     username: str
@@ -78,6 +82,9 @@ class WsUserLeaveEvent(BaseModel):
 
 WsEvent = Annotated[
     Union[
+        WsConnectionRequest,
+        WsConnectionResponse,
+        WsConnectionReject,
         WsMessage,
         WsMessageHistory,
         WsTypingEvent,

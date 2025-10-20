@@ -3,6 +3,8 @@ globalThis.lastActivity = performance.now();
 globalThis.isTyping = false;
 
 const WS_EVENT_TYPES = {
+    connection_request: 'connection_request',
+    connection_reject: 'connection_reject',
     message: 'message',
     message_history: 'message_history',
     typing: 'typing',
@@ -61,6 +63,7 @@ async function wsConnectUser(serverUrl, username) {
         globalThis.websocket.addEventListener('open', () => {
             console.log('WebSocket connection opened');
             globalThis.websocket.send(JSON.stringify({
+                event_type: WS_EVENT_TYPES.connection_request,
                 username: username,
             }));
         });
@@ -124,6 +127,10 @@ function wsReceiveMessage(message) {
             break;
         case WS_EVENT_TYPES.typing:
             updateMemberStatus(message.username, message.is_typing ? 'typing' : 'online');
+            break;
+        case WS_EVENT_TYPES.connection_reject:
+            createToastForSeverity(message.response, 'error');
+            break;
         default:
             console.log('Received unknown message:' + JSON.stringify(message));
     }
