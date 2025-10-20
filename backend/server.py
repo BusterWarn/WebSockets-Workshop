@@ -49,6 +49,7 @@ async def send_message(chat_msg: ChatMessage):
 
     # Add to chat messages
     chat_messages.append(new_message)
+    await manager.server_broadcast(WsMessage(username=username, message=message))
 
     return {"status": "success", "message": "Message sent"}
 
