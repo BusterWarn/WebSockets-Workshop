@@ -669,14 +669,19 @@
         }
 
         // Member list management
-        function addMemberToList(username, status = 'online') {
+        function addMemberToList(username, status = 'online', suffix = "") {
             const memberDiv = document.createElement('div');
             memberDiv.className = 'member-item';
             memberDiv.setAttribute('data-username', username);
 
+            let displayName = username;
+            if (suffix) {
+                displayName += " " + suffix;
+            }
+
             memberDiv.innerHTML = `
                 <i class="bi bi-person-circle me-2"></i>
-                <span>${username}</span>
+                <span>${displayName}</span>
                 <span class="member-status ${status}">${status}</span>
             `;
 
@@ -696,6 +701,8 @@
                 const statusElement = memberItem.querySelector('.member-status');
                 statusElement.className = `member-status ${status}`;
                 statusElement.textContent = status;
+            } else {
+                console.log(`Member ${username} not found`);
             }
         }
 
@@ -709,7 +716,7 @@
             if (window.chatConfig && window.chatConfig.username) {
                 // Clear sample members and add current user
                 membersList.innerHTML = '';
-                addMemberToList(window.chatConfig.username + ' (You)', 'online');
+                addMemberToList(window.chatConfig.username, 'online', suffix = "(You)");
                 updateOnlineCount();
             }
         }

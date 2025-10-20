@@ -103,21 +103,31 @@ function wsReceiveMessage(message) {
     switch (message.event_type) {
         case WS_EVENT_TYPES.message:
             const own = message.username === window.chatConfig.username;
-            window.addMessageToUI(message.message, own, message.username);
+            if (!own) {
+                window.addMessageToUI(message.message, own, message.username);
+            }
             break;
         case WS_EVENT_TYPES.users_online:
             window.addSelfAsOnline();
             message.users.forEach((user) => {
-                window.addMemberToList(user.username, user.status);
+                if (user.username !== window.chatConfig.username) {
+                    window.addMemberToList(user.username, user.status);
+                }
             });
             window.updateOnlineCount();
             break;
         case WS_EVENT_TYPES.user_join:
+            if (message.username === window.chatConfig.username) {
+                return;
+            }
             Toast.info(`User ${message.username} joined the chat`);
             window.addMemberToList(message.username, 'online');
             window.updateOnlineCount();
             break;
         case WS_EVENT_TYPES.user_leave:
+            if (message.username === window.chatConfig.username) {
+                return;
+            }
             Toast.info(`User ${message.username} left the chat`);
             window.removeMemberFromList(message.username);
             window.updateOnlineCount();

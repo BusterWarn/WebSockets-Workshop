@@ -40,15 +40,6 @@ async def send_message(chat_msg: ChatMessage):
     if not message:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
-    # Create message object
-    new_message = {
-        "username": username,
-        "message": message,
-        "timestamp": datetime.now().isoformat()
-    }
-
-    # Add to chat messages
-    chat_messages.append(new_message)
     await manager.server_broadcast(WsMessage(username=username, message=message))
 
     return {"status": "success", "message": "Message sent"}

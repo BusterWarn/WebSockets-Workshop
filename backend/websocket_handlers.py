@@ -187,32 +187,25 @@ class WebSocketManager:
         await sender.queue_message(WsUsersOnline(users=users).model_dump_json())
 
     async def broadcast(self, sender: WebSocketConnection, message: WsEvent):
-        self.add_to_history(username=sender.username, message=message)
-
-        users = list(self.websockets.keys())
-        print(f"Broadcasting event {message} from: {sender.username} ({sender.user_uuid}), to: {users}")
-        for user in users:
-            if user not in self.websockets:
-                continue
-            user = self.websockets[user]
-            if user.user_uuid != sender.user_uuid:
-                print(f"Broadcasting message {message} to: {user.username} ({user.user_uuid})" )
-                await user.queue_message(message.model_dump_json())
+        print(f"Broadcasting event {message} from: {sender.username} ({sender.user_uuid})")
+        await self.server_broadcast(message)
 
     async def server_broadcast(self, message: WsEvent):
-        self.add_to_history(username="SERVER", message=message)
+        self.add_to_history(message=message)
 
         users = list(self.websockets.keys())
         print(f"Broadcasting event {message} from: SERVER, to: {users}")
         for user in users:
             if user not in self.websockets:
                 continue
-            await self.websockets[user].queue_message(message.model_dump_json())
+            user = self.websockets[user]
+            print(f"Broadcasting message {message} to: {user.username} ({user.user_uuid})" )
+            await user.queue_message(message.model_dump_json())
 
-    def add_to_history(self, username: str, message: WsEvent):
+    def add_to_history(self, message: WsEvent):
         if isinstance(message, WsMessage):
             new_message = {
-                "username": username,
+                "username": message.username,
                 "message": message.message,
                 "timestamp": datetime.now().isoformat()
             }
