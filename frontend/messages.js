@@ -1,4 +1,6 @@
 globalThis.websocket = null;
+globalThis.lastActivity = performance.now();
+globalThis.isTyping = false;
 
 const WS_EVENT_TYPES = {
     message: 'message',
@@ -9,6 +11,44 @@ const WS_EVENT_TYPES = {
     user_join: 'user_join',
     user_leave: 'user_leave',
 };
+
+window.addEventListener('keydown', (_event) => {
+    if (!globalThis.websocket) {
+        return;
+    }
+
+    if (!globalThis.isTyping) {
+        globalThis.isTyping = true;
+        globalThis.lastActivity = performance.now();
+        // Send a new typing event
+        const isTypingMessage = {
+            event_type: WS_EVENT_TYPES.typing,
+            username: window.chatConfig.username,
+            is_typing: true,
+        };
+        globalThis.websocket.send(JSON.stringify(isTypingMessage));
+    }
+})
+
+// Interval for determining activity/typing status
+window.setInterval(() => {
+    if (!globalThis.websocket) { return }
+
+    if (!globalThis.isTyping) {
+        return;
+    }
+
+    if ((performance.now() - globalThis.lastActivity) > 2500) {
+        globalThis.isTyping = false;
+        const isTypingMessage = {
+            event_type: WS_EVENT_TYPES.typing,
+            username: window.chatConfig.username,
+            is_typing: false,
+        };
+        globalThis.websocket.send(JSON.stringify(isTypingMessage));
+    }
+
+}, 500)
 
 async function wsConnectUser(serverUrl, username) {
     try {
@@ -56,6 +96,7 @@ async function wsSendMessage(websocket, message) {
 }
 
 function wsReceiveMessage(message) {
+    console.log('Received message:' + JSON.stringify(message));
     switch (message.event_type) {
         case WS_EVENT_TYPES.message:
             const own = message.username === window.chatConfig.username;
@@ -81,6 +122,8 @@ function wsReceiveMessage(message) {
         case WS_EVENT_TYPES.system:
             createToastForSeverity(message.message, message.severity);
             break;
+        case WS_EVENT_TYPES.typing:
+            updateMemberStatus(message.username, message.is_typing ? 'typing' : 'online');
         default:
             console.log('Received unknown message:' + JSON.stringify(message));
     }

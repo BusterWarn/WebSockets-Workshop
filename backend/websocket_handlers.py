@@ -63,6 +63,8 @@ class WebSocketConnection:
 
                 if isinstance(user_msg, WsMessage):
                     await self.send_message(user_msg)
+                elif isinstance(user_msg, WsTypingEvent):
+                    await self.broadcast_func(self, user_msg)
                 else:
                     print(f"Got unhandled event: {user_msg}")
 
