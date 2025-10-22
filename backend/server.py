@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 from typing import List, Dict
 from datetime import datetime
 import uvicorn
@@ -26,7 +27,7 @@ manager = WebSocketManager(chat_messages, UserDatabase())
 
 @app.get("/")
 async def root():
-    return {"message": "Chat Backend API", "endpoints": ["/connect", "/send-message"]}
+    return RedirectResponse(url="/chat/index.html")
 
 @app.post("/send-message")
 async def send_message(chat_msg: ChatMessage):
