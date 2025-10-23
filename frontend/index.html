@@ -70,7 +70,7 @@
             padding: 1rem;
             border-bottom: 1px solid var(--light-purple);
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
         }
 
@@ -209,7 +209,7 @@
             padding: 0.75rem 1rem;
             border-radius: 20px;
             word-wrap: break-word;
-            overflow-wrap: anywhere; /* Alternative approach */
+            overflow-wrap: anywhere;
         }
 
         .message-bubble.own {
@@ -241,71 +241,95 @@
             color: var(--text-muted);
         }
 
-        .typing-indicator {
+        /* Typing Indicator Above Input */
+        .typing-indicator-container {
             background: rgba(40, 0, 113, 0.3);
-            border-radius: 20px;
+            border-top: 1px solid var(--light-purple);
             padding: 0.75rem 1rem;
-            margin: 0.5rem 0;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .typing-indicator-container.hidden {
             display: none;
-            animation: fadeIn 0.3s ease-out;
+        }
+
+        .typing-indicator-container .typing-text {
+            color: var(--lighter-purple);
+            font-size: 0.9rem;
+            font-style: italic;
+            flex: 1;
         }
 
         .typing-dots {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 8px;
         }
 
         .typing-dots span {
-            height: 6px;
             width: 6px;
-            background: var(--text-muted);
+            height: 6px;
+            background: var(--lighter-purple);
             border-radius: 50%;
             display: inline-block;
-            margin: 0 1px;
-            animation: typing 1.4s infinite ease-in-out both;
+            animation: typingDot 1.4s infinite ease-in-out;
         }
 
-        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
-
-        @keyframes typing {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
+        .typing-dots span:nth-child(1) {
+            animation-delay: 0s;
         }
 
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingDot {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.7;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        /* Input Container */
         .chat-input-container {
             background: var(--darker-bg);
             border-top: 2px solid var(--light-purple);
             padding: 1rem;
         }
 
-        .input-group {
-            background: var(--dark-bg);
+        .chat-input-container .input-group {
+            background: rgba(40, 0, 113, 0.2);
             border-radius: 25px;
-            border: 2px solid var(--light-purple);
-            transition: border-color 0.3s ease;
+            overflow: hidden;
         }
 
-        .input-group:focus-within {
-            border-color: var(--lighter-purple);
-            box-shadow: 0 0 0 0.2rem rgba(40, 0, 113, 0.25);
-        }
-
-        .form-control {
+        .chat-input-container .form-control {
             background: transparent;
             border: none;
             color: var(--text-light);
             padding: 0.75rem 1rem;
-            border-radius: 25px;
         }
 
-        .form-control:focus {
+        .chat-input-container .form-control:focus {
             background: transparent;
-            border: none;
-            box-shadow: none;
             color: var(--text-light);
+            box-shadow: none;
         }
 
-        .form-control::placeholder {
+        .chat-input-container .form-control::placeholder {
             color: var(--text-muted);
         }
 
@@ -313,88 +337,41 @@
             background: var(--primary-purple);
             border: none;
             color: white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            margin: 0.25rem;
-            transition: all 0.3s ease;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0 25px 25px 0;
+            transition: background 0.3s ease;
         }
 
         .btn-send:hover {
             background: var(--light-purple);
-            transform: scale(1.1);
             color: white;
         }
 
-        .btn-send:focus {
-            box-shadow: 0 0 0 0.2rem rgba(40, 0, 113, 0.5);
+        .btn-send:active {
+            background: var(--lighter-purple) !important;
         }
 
-        .btn-toggle-sidebar, .btn-members {
-            background: rgba(255, 255, 255, 0.1);
+        .btn-toggle {
+            background: rgba(40, 0, 113, 0.3);
             border: 1px solid var(--light-purple);
             color: white;
             padding: 0.5rem;
-            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
             transition: all 0.3s ease;
-            cursor: pointer;
+            margin-right: 10px;
         }
 
-        .btn-toggle-sidebar:hover, .btn-members:hover {
+        .btn-toggle:hover {
             background: var(--light-purple);
-            color: white;
-            transform: scale(1.05);
-        }
-
-        .btn-members {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .members-sidebar {
-                width: 100vw;
-                min-width: 100vw;
-            }
-
-            .members-sidebar.show ~ .main-chat-area {
-                margin-left: 0;
-                display: none;
-            }
-
-            .btn-toggle-sidebar {
-                display: block;
-            }
-        }
-
-        @media (min-width: 769px) {
-            .btn-toggle-sidebar {
-                display: block;
-            }
-        }
-        .chat-messages::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .chat-messages::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: var(--primary-purple);
-            border-radius: 3px;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb:hover {
-            background: var(--light-purple);
+            transform: scale(1.1);
         }
 
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -402,118 +379,104 @@
             }
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .members-sidebar {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .message-bubble {
+                max-width: 85%;
+            }
+
+            .typing-indicator-container {
+                position: sticky;
+                bottom: 70px;
+                z-index: 100;
+                background: rgba(40, 0, 113, 0.95);
+                backdrop-filter: blur(15px);
+                box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        /* Scrollbar Styling */
+        .chat-messages::-webkit-scrollbar,
+        .members-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track,
+        .members-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb,
+        .members-list::-webkit-scrollbar-thumb {
+            background: var(--light-purple);
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover,
+        .members-list::-webkit-scrollbar-thumb:hover {
+            background: var(--lighter-purple);
         }
     </style>
 </head>
 <body>
-    <div class="container-fluid p-0">
-        <div class="chat-container">
-            <!-- Sidebar for Online Members -->
-            <div class="members-sidebar" id="membersSidebar">
-                <div class="sidebar-header">
-                    <h5><i class="bi bi-people me-2"></i>Online Members</h5>
-                    <button class="btn-close-sidebar" id="closeSidebar">
-                        <i class="bi bi-x"></i>
+    <div class="chat-container">
+        <!-- Members Sidebar -->
+        <div class="members-sidebar" id="membersSidebar">
+            <div class="sidebar-header">
+                <h5><i class="bi bi-people-fill me-2"></i>Online Members</h5>
+                <button class="btn-close-sidebar" id="closeSidebar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="members-list" id="membersList">
+                <!-- Members will be added dynamically -->
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="main-chat-area">
+            <!-- Chat Header -->
+            <div class="chat-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-toggle" id="toggleSidebar">
+                        <i class="bi bi-list"></i>
                     </button>
+                    <h3>
+                        WebSocket Workshop
+                        <span class="online-indicator"></span>
+                    </h3>
                 </div>
-                <div class="members-list" id="membersList">
-                    <!-- Online members will be populated here -->
-                    <div class="member-item">
-                        <i class="bi bi-person-circle me-2"></i>
-                        <span>You</span>
-                        <span class="member-status online"></span>
+                <button class="btn btn-toggle" id="showMembers">
+                    <i class="bi bi-people-fill"></i>
+                    <span class="badge bg-success ms-1" id="online-count">0 online</span>
+                </button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="messagesContainer">
+                <!-- Sample Message -->
+                <div class="message">
+                    <div class="message-bubble other">
+                        <div class="fw-bold mb-1" style="font-size: 0.8rem; color: var(--lighter-purple);">Workshop Bot</div>
+                        Welcome to the WebSocket Workshop! Start chatting below.
                     </div>
-                    <div class="member-item">
-                        <i class="bi bi-person-circle me-2"></i>
-                        <span>John Doe</span>
-                        <span class="member-status online"></span>
-                    </div>
-                    <div class="member-item">
-                        <i class="bi bi-person-circle me-2"></i>
-                        <span>Alice</span>
-                        <span class="member-status typing">typing...</span>
-                    </div>
+                    <div class="message-info">2:35 PM</div>
                 </div>
             </div>
 
-            <!-- Main Chat Area -->
-            <div class="main-chat-area">
-                <!-- Chat Header -->
-                <div class="chat-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">
-                            <button class="btn-toggle-sidebar me-3" id="toggleSidebar">
-                                <i class="bi bi-list"></i>
-                            </button>
-                            <div>
-                                <h3>
-                                    <i class="bi bi-chat-dots me-2"></i>
-                                    Chat Room
-                                    <span class="online-indicator"></span>
-                                </h3>
-                            </div>
-                        </div>
-                        <div class="text-light d-flex align-items-center">
-                            <button class="btn-members me-2" id="showMembers">
-                                <i class="bi bi-people"></i>
-                                <span id="online-count">0 online</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-            <!-- Messages Container -->
-            <div class="chat-messages" id="messagesContainer">
-                <!-- Sample Messages -->
-                <div class="system-message">
-                    <i class="bi bi-info-circle me-1"></i>
-                    Welcome to the chat room!
-                </div>
-
-                <div class="message">
-                    <div class="message-bubble other">
-                        <div class="fw-bold mb-1" style="font-size: 0.8rem; color: var(--lighter-purple);">John Doe</div>
-                        Hello everyone! How's it going?
-                    </div>
-                    <div class="message-info">2:34 PM</div>
-                </div>
-
-                <div class="message message-own">
-                    <div class="message-bubble own">
-                        Hey there! Welcome to the chat.
-                    </div>
-                    <div class="message-info">2:35 PM</div>
-                </div>
-
-                <div class="system-message">
-                    <i class="bi bi-person-plus me-1"></i>
-                    Alice joined the room
-                </div>
-
-                <div class="message message-own">
-                    <div class="message-bubble own">
-                        Let's build a modern chat application with WebSockets! Let's build a modern chat application with WebSockets! Let's build a modern chat application with WebSockets! Let's build a modern chat application with WebSockets! Let's build a modern chat application with WebSockets! Let's build a modern chat application with WebSockets! Let's build a modern chat application with WebSockets! Let's build a modern chat application with WebSockets! Let's build a modern chat application with WebSockets! Let's build a modern chat application with WebSockets! Let's build a modern chat application with WebSockets! Let's build a modern chat application with WebSockets!
-                    </div>
-                    <div class="message-info">2:35 PM</div>
-                </div>
-                <div class="message message-own">
-                    <div class="message-bubble own">
-                        WebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSocketsWebSockets
-                    </div>
-                    <div class="message-info">2:35 PM</div>
-                </div>
-
-                <!-- Typing Indicator -->
-                <div class="typing-indicator" id="typingIndicator">
-                    <span class="text-muted">Someone is typing</span>
-                    <div class="typing-dots ms-2 d-inline-block">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div>
+            <!-- Typing Indicator Above Input (OUTSIDE messages container) -->
+            <div class="typing-indicator-container hidden" id="typingIndicatorAboveInput">
+                <i class="bi bi-pencil-fill me-2" style="color: var(--lighter-purple);"></i>
+                <span class="typing-text" id="typingTextDisplay">Someone is typing</span>
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </div>
             </div>
 
@@ -525,7 +488,6 @@
                         <i class="bi bi-send-fill"></i>
                     </button>
                 </div>
-            </div>
             </div>
         </div>
     </div>
@@ -566,6 +528,10 @@
         const closeSidebar = document.getElementById('closeSidebar');
         const showMembers = document.getElementById('showMembers');
         const membersList = document.getElementById('membersList');
+
+        // Typing indicator elements
+        const typingIndicatorContainer = document.getElementById('typingIndicatorAboveInput');
+        const typingTextDisplay = document.getElementById('typingTextDisplay');
 
         // Sidebar functionality
         toggleSidebar.addEventListener('click', () => {
@@ -616,7 +582,6 @@
 
             try {
                 sendMessage(window.chatConfig.backend_server_address, window.chatConfig.username, message);
-                // wsSendMessage(globalThis.websocket, message); With websockets
                 addMessageToUI(message, 'own');
                 messageInput.value = '';
             } catch (error) {
@@ -628,8 +593,6 @@
         function addMessageToUI(message, type, username = null, currentTime = dayjs().format('h:mm A')) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type === 'own' ? 'message-own' : ''}`;
-
-            // const currentTime = dayjs().format('h:mm A');
 
             let messageHTML = '';
             if (type === 'own') {
@@ -695,6 +658,7 @@
             }
         }
 
+        // Enhanced updateMemberStatus with typing indicator support
         function updateMemberStatus(username, status) {
             const memberItem = membersList.querySelector(`[data-username="${username}"]`);
             if (memberItem) {
@@ -703,6 +667,47 @@
                 statusElement.textContent = status;
             } else {
                 console.log(`Member ${username} not found`);
+            }
+
+            // Update the typing indicator above input
+            updateTypingIndicatorAboveInput(username, status);
+        }
+
+        // Function to update typing indicator above input
+        const typingUsersSet = new Set();
+
+        function updateTypingIndicatorAboveInput(username, status) {
+            // Don't show typing for self
+            if (username === window.chatConfig.username) {
+                return;
+            }
+
+            if (status === 'typing') {
+                typingUsersSet.add(username);
+            } else {
+                typingUsersSet.delete(username);
+            }
+
+            // Update the display
+            if (typingUsersSet.size === 0) {
+                typingIndicatorContainer.classList.add('hidden');
+            } else {
+                typingIndicatorContainer.classList.remove('hidden');
+
+                const users = Array.from(typingUsersSet);
+                let text = '';
+
+                if (users.length === 1) {
+                    text = `${users[0]} is typing`;
+                } else if (users.length === 2) {
+                    text = `${users[0]} and ${users[1]} are typing`;
+                } else if (users.length === 3) {
+                    text = `${users[0]}, ${users[1]}, and ${users[2]} are typing`;
+                } else {
+                    text = `${users[0]}, ${users[1]}, and ${users.length - 2} others are typing`;
+                }
+
+                typingTextDisplay.textContent = text;
             }
         }
 
