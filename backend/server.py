@@ -21,9 +21,11 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
+GLOBAL_ROOM_NAME = "ALL"
+
 # In-memory storage
-chat_messages: List[Dict] = []
-manager = WebSocketManager(chat_messages, UserDatabase())
+chat_messages: Dict[str, List[Dict]] = { GLOBAL_ROOM_NAME: [] }
+managers: Dict[str, WebSocketManager] = {}
 
 @app.get("/")
 async def root():
@@ -45,49 +47,39 @@ async def send_message(chat_msg: ChatMessage):
 
     return {"status": "success", "message": "Message sent"}
 
-@app.get("/chat-data/{username}")
-async def get_chat_data(username: str):
-    """Alternative endpoint to get chat data with username in URL"""
-    username = username.strip()
+def get_manager(room_name: str):
+    if room_name not in managers:
+        managers[room_name] = WebSocketManager([], UserDatabase())
+    return managers[room_name]
 
-    if not username:
-        raise HTTPException(status_code=400, detail="Username cannot be empty")
-
-    # Update user's last seen time
-    connected_users[username] = datetime.now()
-
-    # Format connected users for response
-    users_list = [
-        {
-            "username": user,
-            "connected_at": timestamp.isoformat()
-        }
-        for user, timestamp in connected_users.items()
-    ]
-
-    return ChatData(
-        messages=chat_messages,
-        connected_users=users_list
-    )
-
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
+async def connect_user(websocket: WebSocket, room_name: str):
     try:
-        await manager.connect(websocket)
+        await websocket.accept()
+        await managers[room_name].connect(websocket)
     except Exception as e:
         print(f"Connection error {e}")
+
+# Global room, this is just a shortcut for /ws/{GLOBAL_ROOM_NAME}
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    print(f"New websocket connection with default room_name: {GLOBAL_ROOM_NAME}")
+    await connect_user(websocket, GLOBAL_ROOM_NAME)
+
+@app.websocket("/ws/{room_name}")
+async def websocket_endpoint(websocket: WebSocket, room_name: str):
+    print(f"New websocket connection with room_name: {room_name}")
+    await connect_user(websocket, room_name)
 
 @app.get("/messages")
 async def get_all_messages():
     """Get all chat messages"""
-    return {"messages": chat_messages}
+    return {"messages": chat_messages[GLOBAL_ROOM_NAME]}
 
 @app.delete("/clear-chat")
 async def clear_chat():
     """Clear all messages and users (useful for testing)"""
     global chat_messages, connected_users
-    chat_messages = []
+    chat_messages[GLOBAL_ROOM_NAME] = []
     connected_users = {}
     return {"status": "success", "message": "Chat cleared"}
 

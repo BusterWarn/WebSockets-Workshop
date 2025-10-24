@@ -517,7 +517,7 @@
         }
 
         // Try connecting to the server via WebSockets
-        wsConnectUser(window.chatConfig.backend_server_address, window.chatConfig.username);
+        wsConnectUser(window.getWsAddress(), window.chatConfig.username);
 
         // Main chat functionality
         const messageInput = document.getElementById('messageInput');
@@ -581,7 +581,8 @@
             }
 
             try {
-                sendMessage(window.chatConfig.backend_server_address, window.chatConfig.username, message);
+                // sendMessage(window.chatConfig.backend_server_address, window.chatConfig.username, message);
+                wsSendMessage(globalThis.websocket, message);
                 addMessageToUI(message, 'own');
                 messageInput.value = '';
             } catch (error) {
@@ -731,7 +732,7 @@
         document.addEventListener('DOMContentLoaded', async function() {
             scrollToBottom();
 
-            const response = await getAllMessages(window.chatConfig.backend_server_address);
+            const response = await getAllMessages(window.getRestAddress());
             const messages = response.messages;
 
             messages.forEach((msg, index) => {

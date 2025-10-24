@@ -83,28 +83,6 @@ async function getAllMessages(serverUrl) {
 }
 
 /**
- * Get chat data (messages + users) with username
- * @param {string} serverUrl - Base URL of the server
- * @param {string} username - Username to refresh with
- * @returns {Promise<Object>} - Promise resolving to full chat data or error
- */
-async function getChatData(serverUrl, username) {
-    try {
-        const response = await fetch(`${serverUrl}/chat-data/${encodeURIComponent(username)}`);
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        return await response.json();
-    } catch (error) {
-        Toast.error(`Error getting chat data: ${error}`);
-        console.error(`Error getting chat data: ${error}`);
-        throw error;
-    }
-}
-
-/**
  * Clear all chat messages and users (for testing)
  * @param {string} serverUrl - Base URL of the server
  * @returns {Promise<Object>} - Promise resolving to success response or error

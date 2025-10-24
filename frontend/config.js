@@ -3,8 +3,10 @@
 // Fill in username and server address here to not get prompted!
 const CONFIG = {
     username: '',
-    backend_server_address: 'http://localhost:5000',
-    ws_server_address: 'ws://localhost:5000/ws',
+    room_name: '',
+    // Just input server:port, omit http:// or ws://
+    backend_server_address: 'localhost:5000',
+    use_https: false,
 };
 
 // Function to get configuration values, prompting user if needed
@@ -36,5 +38,31 @@ function getConfig() {
     return config;
 }
 
+function getRestAddress() {
+    let suffix = `/${window.chatConfig.room_name}`;
+    if (!window.chatConfig.room_name) {
+        suffix = '';
+    }
+
+    if (window.chatConfig.use_https) {
+        return `https://${window.chatConfig.backend_server_address}${suffix}`;
+    }
+    return `http://${window.chatConfig.backend_server_address}${suffix}`;
+}
+
+function getWsAddress() {
+    let suffix = `/${window.chatConfig.room_name}`;
+    if (!window.chatConfig.room_name) {
+        suffix = '';
+    }
+
+    if (window.chatConfig.use_https) {
+        return `wss://${window.chatConfig.backend_server_address}/ws${suffix}`;
+    }
+    return `ws://${window.chatConfig.backend_server_address}/ws${suffix}`;
+}
+
 // Export config for use in other files
 window.chatConfig = getConfig();
+window.getRestAddress = getRestAddress;
+window.getWsAddress = getWsAddress;
