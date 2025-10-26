@@ -54,7 +54,7 @@ window.setInterval(() => {
 
 async function wsConnectUser(serverUrl, username) {
     try {
-        globalThis.websocket = new WebSocket(`${serverUrl}/ws`);
+        globalThis.websocket = new WebSocket(`${serverUrl}`);
 
         globalThis.websocket.addEventListener('error', (e) => {
             console.error('WebSocket error:', e);
