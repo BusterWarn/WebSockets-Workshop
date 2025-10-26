@@ -581,8 +581,8 @@
             }
 
             try {
-                // sendMessage(window.chatConfig.backend_server_address, window.chatConfig.username, message);
-                wsSendMessage(globalThis.websocket, message);
+                sendMessage(window.getRestAddress(), window.chatConfig.username, message);
+                //wsSendMessage(globalThis.websocket, message);
                 addMessageToUI(message, 'own');
                 messageInput.value = '';
             } catch (error) {
