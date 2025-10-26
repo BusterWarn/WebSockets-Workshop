@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from typing import List, Dict
 import uvicorn
+import re
 
 from message_types import *
 from websocket_handlers import *
@@ -41,7 +42,7 @@ async def https_send_message(username: str, chat_msg: ChatMessage, room_name: st
     username = chat_msg.username.strip()
     message = chat_msg.message.strip()
 
-    if not username:
+    if not username or not re.match(r'^[a-zA-Z0-9_ -]+$', username):
         raise HTTPException(status_code=400, detail="Username cannot be empty")
 
     if not message:

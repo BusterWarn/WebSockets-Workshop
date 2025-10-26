@@ -4,6 +4,7 @@ from typing import Callable
 from datetime import datetime
 import uuid
 import asyncio
+import re
 
 from message_types import *
 from user_database import *
@@ -158,7 +159,8 @@ class WebSocketManager:
             print(f"Username is too long: '{username[0:MAX_USERNAME_LENGTH]}'...")
             await user_websocket.send_text(WsConnectionReject(response="Username is too long").model_dump_json())
             return False
-        if not username.isalnum():
+        # Checks that the username only contains [a-zA-Z0-9_ -]
+        if not re.match(r'^[a-zA-Z0-9_ -]+$', username):
             print(f"Username contains invalid characters: '{username[0:MAX_USERNAME_LENGTH]}'...")
             await user_websocket.send_text(WsConnectionReject(response="Username contains invalid characters").model_dump_json())
             return False
