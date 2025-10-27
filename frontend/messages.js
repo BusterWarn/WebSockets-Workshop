@@ -1,6 +1,7 @@
 globalThis.websocket = null;
 globalThis.lastActivity = performance.now();
 globalThis.isTyping = false;
+globalThis.GLOBAL_ROOM_NAME = "Global";
 
 const WS_EVENT_TYPES = {
     connection_request: 'connection_request',
@@ -12,6 +13,9 @@ const WS_EVENT_TYPES = {
     users_online: 'users_online',
     user_join: 'user_join',
     user_leave: 'user_leave',
+    all_rooms: 'all_rooms',
+    room_create: 'room_create',
+    room_chat_clear: 'room_chat_clear',
 };
 
 window.addEventListener('keydown', (_event) => {
@@ -52,7 +56,7 @@ window.setInterval(() => {
 
 }, 500)
 
-async function wsConnectUser(serverUrl, username) {
+function wsConnectUser(serverUrl, username) {
     try {
         globalThis.websocket = new WebSocket(`${serverUrl}`);
 
@@ -84,7 +88,7 @@ async function wsConnectUser(serverUrl, username) {
     }
 }
 
-async function wsSendMessage(websocket, message) {
+function wsSendMessage(websocket, message) {
     if (!websocket) {
         throw new Error('WebSocket is not connected');
     }
@@ -102,10 +106,17 @@ function wsReceiveMessage(message) {
     console.log('Received message:' + JSON.stringify(message));
     switch (message.event_type) {
         case WS_EVENT_TYPES.message:
-            const own = message.username === window.chatConfig.username;
-            if (!own) {
+            const own = msg.username === window.chatConfig.username ? "own" : "other";
+            if (own === "other") {
                 window.addMessageToUI(message.message, own, message.username);
             }
+            break;
+        case WS_EVENT_TYPES.message_history:
+            message.messages.forEach((msg) => {
+                console.log(`message ${msg.message}, ${msg}`);
+                const own = msg.username === window.chatConfig.username ? "own" : "other";
+                window.addMessageToUI(msg.message, own, msg.username);
+            });
             break;
         case WS_EVENT_TYPES.users_online:
             window.addSelfAsOnline();
@@ -140,6 +151,20 @@ function wsReceiveMessage(message) {
             break;
         case WS_EVENT_TYPES.connection_reject:
             createToastForSeverity(message.response, 'error');
+            break;
+        case WS_EVENT_TYPES.all_rooms:
+            console.log(`rooms: ${message.rooms}`)
+            message.rooms.forEach((room) => {
+                console.log(`Room ${room.room_name} created by ${room.room_creator}`);
+                window.addRoomToList(room.room_name, false);
+            })
+            break;
+        case WS_EVENT_TYPES.room_create:
+            if (message.room.room_name == "Global") {
+                return;
+            }
+            window.addRoomToList(message.room.room_name, false);
+            Toast.success(`Room ${message.room.room_name} created by ${message.room.room_creator}`);
             break;
         default:
             console.log('Received unknown message:' + JSON.stringify(message));

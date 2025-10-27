@@ -15,11 +15,23 @@ const CONFIG = {
     // Set to true if you want to use https instead of http, will also use
     // wss instead of ws when true
     use_https: false,
+    use_rest: false,
 };
 
 // Function to get configuration values, prompting user if needed
 function getConfig() {
     const config = { ...CONFIG };
+
+    // append ?room=some_name to set the room name, convenient for testing
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomName = urlParams.get('room');
+    if (roomName) {
+        config.room_name = roomName;
+    }
+    const usernameUrl = urlParams.get('username');
+    if (usernameUrl) {
+        config.username = usernameUrl;
+    }
 
     // Check if username is set
     if (!config.username || config.username.trim() === '') {

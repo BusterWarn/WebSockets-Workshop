@@ -44,7 +44,7 @@ class WsUserStatus(BaseModel):
     connected_at: str
 
 ## Chat
-# WebSockets protocol messages
+### WebSockets protocol messages
 class WsConnectionRequest(BaseModel):
     event_type: Literal["connection_request"] = "connection_request"
     username: str
@@ -80,6 +80,21 @@ class WsUserLeaveEvent(BaseModel):
     event_type: Literal["user_leave"] = "user_leave"
     username: str
 
+### Room info and management
+class RoomInfo(BaseModel):
+    room_name: str
+    room_creator: str
+    connected_users: List[str]
+class WsAllRooms(BaseModel):
+    event_type: Literal["all_rooms"] = "all_rooms"
+    rooms: List[RoomInfo]
+class WsRoomCreate(BaseModel):
+    event_type: Literal["room_create"] = "room_create"
+    room: RoomInfo
+class WsRoomChatClear(BaseModel):
+    event_type: Literal["room_chat_cleared"] = "room_chat_cleared"
+    room_name: str
+
 WsEvent = Annotated[
     Union[
         WsConnectionRequest,
@@ -92,6 +107,9 @@ WsEvent = Annotated[
         WsUsersOnline,
         WsUserJoinEvent,
         WsUserLeaveEvent,
+        WsAllRooms,
+        WsRoomCreate,
+        WsRoomChatClear,
     ],
     Field(discriminator="event_type"),
 ]

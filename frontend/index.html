@@ -723,7 +723,7 @@
             roomDiv.className = `room-item${isActive ? ' active' : ''}`;
             roomDiv.setAttribute('data-room', roomName);
 
-            const displayName = roomName || 'Global';
+            const displayName = roomName || globalThis.GLOBAL_ROOM_NAME;
             const icon = roomName ? 'bi-hash' : 'bi-globe';
 
             roomDiv.innerHTML = `
@@ -741,7 +741,7 @@
         // Switch to a different room
         function switchToRoom(roomName) {
             if (roomName === currentRoom) {
-                Toast.info(`Already in room: ${roomName || 'Global'}`);
+                Toast.info(`Already in room: ${roomName || globalThis.GLOBAL_ROOM_NAME}`);
                 return;
             }
 
@@ -755,7 +755,7 @@
             // Clear messages
             messagesContainer.innerHTML = '';
 
-            const displayName = roomName || 'Global';
+            const displayName = roomName || globalThis.GLOBAL_ROOM_NAME;
             Toast.success(`Switched to room: ${displayName}`);
 
             // Log for now (will integrate with backend later)
@@ -763,6 +763,9 @@
 
             // For now, simulate system message. TODO: Implement
             addSystemMessage(`You joined the ${displayName} room`);
+
+            window.chatConfig.room_name = roomName;
+            wsConnectUser(window.getWsAddress(), window.chatConfig.username);
 
             // Close sidebar on mobile
             if (window.innerWidth <= 768) {
@@ -787,10 +790,6 @@
         function initializeRooms() {
             // Add global/default room
             addRoomToList('', currentRoom === '');
-
-            // Add stub rooms
-            addRoomToList('room_1', currentRoom === 'room_1');
-            addRoomToList('room_2', currentRoom === 'room_2');
 
             // Show toast on initialization
             if (currentRoom) {
@@ -846,8 +845,11 @@
             }
 
             try {
-                sendMessage(window.getRestAddress(), window.chatConfig.username, message);
-                //wsSendMessage(globalThis.websocket, message);
+                if (window.chatConfig.use_rest) {
+                    sendMessage(window.getRestAddress(), window.chatConfig.username, message);
+                } else {
+                    wsSendMessage(globalThis.websocket, message);
+                }
                 addMessageToUI(message, 'own');
                 messageInput.value = '';
             } catch (error) {
@@ -998,6 +1000,10 @@
 
         document.addEventListener('DOMContentLoaded', async function() {
             scrollToBottom();
+
+            if (!window.chatConfig.use_rest) {
+                return;
+            }
 
             const response = await getAllMessages(window.getRestAddress());
             const messages = response.messages;

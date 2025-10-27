@@ -1,6 +1,6 @@
 from fastapi import  WebSocket, WebSocketDisconnect
 from pydantic import ValidationError, TypeAdapter
-from typing import Callable
+from typing import Callable, Any
 from datetime import datetime
 import uuid
 import asyncio
@@ -110,26 +110,26 @@ class WebSocketManager:
         self.websockets = {}
         self.database = user_database
         self.chat_messages = chat_messages
+        self.creator = "<IN PROGRESS>"
 
-    async def connect(self, websocket: WebSocket):
+    async def setup_user(self, websocket: WebSocket):
         # 1. A connection request must be sent from client client
         # 1.1 The server will send a confirmation/rejection
         # 2. The client may now send messages
-        # 2.1 The server will broadcast to all users
+        # 2.1 The server will broadcast messages to all users
 
         userConnectionReq = await websocket.receive_text()
         if not userConnectionReq:
-            return
+            return None
         try:
             userConnectionReq = WsConnectionRequest.model_validate_json(userConnectionReq)
         except ValidationError as e:
             print(f"userConnectionReq {e}")
             await websocket.send_text(UserConnectionResponse(response=f"Invalid request {e}").model_dump_json())
-            return
+            return None
         if not await self.validate_username(websocket, userConnectionReq.username):
-            return
+            return None
 
-        # TODO: Check that the username is not already in use or is a registered user
         username = userConnectionReq.username.strip()
 
         broadcast_func = lambda user, message : self.broadcast(user, message)
@@ -137,14 +137,18 @@ class WebSocketManager:
         user = WebSocketConnection(websocket, str(uuid.uuid4()), username, broadcast_func)
         self.websockets[user.user_uuid] = user
 
-        print(f"User '{username}' connected, starting the WebSocket handler")
+        return user
+
+    async def run(self, user: WebSocketConnection, managers: Dict[str, Any]):
+        print(f"User '{user.username}' connected, starting the WebSocket handler")
 
         await self.send_connection_response(user)
         await self.send_past_chats(user)
+        await self.send_rooms(user, managers)
         await self.send_online_users(user)
 
         # Notify other users that a new user has joined
-        await self.broadcast(user, WsUserJoinEvent(username=username))
+        await self.broadcast(user, WsUserJoinEvent(username=user.username))
 
         try:
             await user.receive_loop()
@@ -182,11 +186,13 @@ class WebSocketManager:
     async def send_past_chats(self, sender: WebSocketConnection):
         chats = self.chat_messages.copy()
         await sender.queue_message(WsMessageHistory(messages=chats).model_dump_json())
-
     async def send_online_users(self, sender: WebSocketConnection):
         users = self.get_users_online()
         users = [user for user in users if user.username != sender.username]
         await sender.queue_message(WsUsersOnline(users=users).model_dump_json())
+    async def send_rooms(self, sender: WebSocketConnection, managers: Dict[str, Any]):
+        rooms = gather_rooms(managers)
+        await sender.queue_message(WsAllRooms(rooms=rooms).model_dump_json())
 
     async def broadcast(self, sender: WebSocketConnection, message: WsEvent):
         print(f"Broadcasting event {message} from: {sender.username} ({sender.user_uuid})")
@@ -213,7 +219,6 @@ class WebSocketManager:
             }
             self.chat_messages.append(new_message)
 
-
     def get_users_online(self) -> List[WsUserStatus]:
         users: List[WsUserStatus] = []
         for user in self.websockets:
@@ -222,3 +227,18 @@ class WebSocketManager:
                 connected_at=user.join_time.isoformat()
             ))
         return users
+
+def gather_rooms(managers: Dict[str, WebSocketManager]) -> List[RoomInfo]:
+    rooms: List[RoomInfo] = []
+    for room_name, manager in managers.items():
+        users = [user.username for user in manager.get_users_online()]
+        rooms.append(RoomInfo(room_name=room_name, room_creator=manager.creator, connected_users=users))
+    return rooms
+
+
+async def broadcast_new_room_all(managers: Dict[str, WebSocketManager], room_name: str, username: str):
+    await broadcast_all_rooms(managers, WsRoomCreate(room=RoomInfo(room_name=room_name, room_creator=username, connected_users=[username])))
+
+async def broadcast_all_rooms(managers: Dict[str, WebSocketManager], message: WsEvent):
+    for room_name in managers:
+        await managers[room_name].server_broadcast(message)
