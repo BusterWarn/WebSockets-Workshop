@@ -732,19 +732,25 @@
             `;
 
             roomDiv.addEventListener('click', () => {
-                switchToRoom(roomName);
+                requestRoomSwitch(roomName);
             });
 
             roomsList.appendChild(roomDiv);
         }
 
-        // Switch to a different room
-        function switchToRoom(roomName) {
+        function requestRoomSwitch(roomName) {
             if (roomName === currentRoom) {
                 Toast.info(`Already in room: ${roomName || globalThis.GLOBAL_ROOM_NAME}`);
                 return;
             }
 
+            const displayName = roomName || globalThis.GLOBAL_ROOM_NAME;
+            Toast.info(`Initiating room switch to: ${displayName}`);
+            window.wsSendRoomSwitchReq(globalThis.websocket, displayName);
+        }
+
+        // Switch to a different room
+        function switchToRoom(roomName) {
             const previousRoom = currentRoom;
             currentRoom = roomName;
 
@@ -765,7 +771,6 @@
             addSystemMessage(`You joined the ${displayName} room`);
 
             window.chatConfig.room_name = roomName;
-            wsConnectUser(window.getWsAddress(), window.chatConfig.username);
 
             // Close sidebar on mobile
             if (window.innerWidth <= 768) {

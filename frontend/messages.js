@@ -16,6 +16,8 @@ const WS_EVENT_TYPES = {
     all_rooms: 'all_rooms',
     room_create: 'room_create',
     room_chat_clear: 'room_chat_clear',
+    room_switch_request: 'room_switch_request',
+    room_switch_response: 'room_switch_response',
 };
 
 window.addEventListener('keydown', (_event) => {
@@ -102,11 +104,20 @@ function wsSendMessage(websocket, message) {
     ))
 }
 
+function wsSendRoomSwitchReq(websocket, roomName) {
+    websocket.send(JSON.stringify(
+        {
+            event_type: WS_EVENT_TYPES.room_switch_request,
+            room_name: roomName,
+        }
+    ))
+}
+
 function wsReceiveMessage(message) {
     console.log('Received message:' + JSON.stringify(message));
     switch (message.event_type) {
         case WS_EVENT_TYPES.message:
-            const own = msg.username === window.chatConfig.username ? "own" : "other";
+            const own = message.username === window.chatConfig.username ? "own" : "other";
             if (own === "other") {
                 window.addMessageToUI(message.message, own, message.username);
             }
@@ -155,6 +166,9 @@ function wsReceiveMessage(message) {
         case WS_EVENT_TYPES.all_rooms:
             console.log(`rooms: ${message.rooms}`)
             message.rooms.forEach((room) => {
+                if (room.room_name == "Global") {
+                    return;
+                }
                 console.log(`Room ${room.room_name} created by ${room.room_creator}`);
                 window.addRoomToList(room.room_name, false);
             })
@@ -165,6 +179,13 @@ function wsReceiveMessage(message) {
             }
             window.addRoomToList(message.room.room_name, false);
             Toast.success(`Room ${message.room.room_name} created by ${message.room.room_creator}`);
+            break;
+        case WS_EVENT_TYPES.room_switch_response:
+            if (message.room_name === window.chatConfig.room_name) {
+                return;
+            }
+            console.log(`Room switched to ${message.room_name}`);
+            window.switchToRoom(message.room_name);
             break;
         default:
             console.log('Received unknown message:' + JSON.stringify(message));
@@ -186,3 +207,5 @@ function createToastForSeverity(message, severity) {
             break;
     }
 }
+
+window.wsSendRoomSwitchReq = wsSendRoomSwitchReq;

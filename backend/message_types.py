@@ -95,6 +95,13 @@ class WsRoomChatClear(BaseModel):
     event_type: Literal["room_chat_cleared"] = "room_chat_cleared"
     room_name: str
 
+class WsRoomSwitchRequest(BaseModel):
+    event_type: Literal["room_switch_request"] = "room_switch_request"
+    room_name: str
+class WsRoomSwitchResponse(BaseModel):
+    event_type: Literal["room_switch_response"] = "room_switch_response"
+    room_name: str
+
 WsEvent = Annotated[
     Union[
         WsConnectionRequest,
@@ -110,6 +117,8 @@ WsEvent = Annotated[
         WsAllRooms,
         WsRoomCreate,
         WsRoomChatClear,
+        WsRoomSwitchRequest,
+        WsRoomSwitchResponse,
     ],
     Field(discriminator="event_type"),
 ]

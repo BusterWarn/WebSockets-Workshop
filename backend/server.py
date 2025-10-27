@@ -21,25 +21,6 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-GLOBAL_ROOM_NAME = "Global"
-
-# In-memory storage, maps room_name to the rooms' chat messages
-chat_messages: Dict[str, List[Dict]] = { GLOBAL_ROOM_NAME: [] }
-# Maps room_name to the rooms' WebSocketManager
-managers: Dict[str, WebSocketManager] = {}
-
-def get_chat_messages(room_name: str):
-    if room_name not in chat_messages:
-        chat_messages[room_name] = []
-    return chat_messages[room_name]
-
-def get_manager(room_name: str):
-    room_is_new = False
-    if room_name not in managers:
-        managers[room_name] = WebSocketManager(get_chat_messages(room_name), UserDatabase())
-        room_is_new = True
-    return (managers[room_name], room_is_new)
-
 async def https_send_message(username: str, chat_msg: ChatMessage, room_name: str):
     """Send a message to the chat"""
     username = chat_msg.username.strip()
@@ -51,10 +32,10 @@ async def https_send_message(username: str, chat_msg: ChatMessage, room_name: st
     if not message:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
-    (manager, room_is_new) = get_manager(room_name)
+    (manager, room_is_new) = storage.get_manager(room_name)
     if room_is_new:
         manager.creator = username
-        await broadcast_new_room_all(managers, room_name, username)
+        await broadcast_new_room_all(storage.managers, room_name, username)
     await manager.server_broadcast(WsMessage(username=username, message=message))
 
     return {"status": "success", "message": "Message sent"}
@@ -74,41 +55,25 @@ async def send_message_room(chat_msg: ChatMessage, room_name: str):
 @app.get("/messages")
 async def get_all_messages():
     """Get all chat messages"""
-    return {"messages": chat_messages[GLOBAL_ROOM_NAME]}
+    return {"messages": storage.chat_messages[GLOBAL_ROOM_NAME]}
 
 @app.get("/{room_name}/messages/")
 async def get_all_messages_room(room_name: str):
     """Get all chat messages"""
-    return {"messages": get_chat_messages(room_name)}
+    return {"messages": storage.get_chat_messages(room_name)}
 
 @app.get("/rooms")
 async def get_all_rooms():
     """Get all chat rooms"""
-    return {"rooms": gather_rooms(managers)}
+    return {"rooms": gather_rooms(storage.managers)}
 
 @app.delete("/clear-chat")
 async def clear_chat():
     """Clear all messages and users (useful for testing)"""
     global chat_messages, connected_users
-    chat_messages[GLOBAL_ROOM_NAME] = []
+    storage.chat_messages[GLOBAL_ROOM_NAME] = []
     connected_users = {}
     return {"status": "success", "message": "Chat cleared"}
-
-
-async def ws_connect_user(websocket: WebSocket, room_name: str):
-    try:
-        await websocket.accept()
-        (manager, room_is_new) = get_manager(room_name)
-        user = await manager.setup_user(websocket)
-        if not user:
-            return
-        if room_is_new:
-            manager.creator = user.username
-            await broadcast_new_room_all(managers, room_name, user.username)
-
-        await manager.run(user, managers)
-    except Exception as e:
-        print(f"ws_connect_user: Connection error {e}")
 
 # Global room, this is just a shortcut for /ws/{GLOBAL_ROOM_NAME}
 @app.websocket("/ws")
