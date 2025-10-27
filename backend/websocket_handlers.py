@@ -27,6 +27,9 @@ class Storage:
         self.all_users[user.username] = user
         return user
 
+    def clear_chat(self, room_name: str):
+        self.chat_messages[room_name] = []
+
     def remove_user(self, username: str):
         if username in self.all_users:
             self.all_users.pop(username)
@@ -102,6 +105,14 @@ class WebSocketConnection:
                     await self.broadcast_func(self, user_msg)
                 elif isinstance(user_msg, WsRoomSwitchRequest):
                     return user_msg
+                elif isinstance(user_msg, WsRoomChatClear):
+                    if user_msg.room_name == GLOBAL_ROOM_NAME:
+                        await self.broadcast_func(self, WsSystemMessage(message=f"{self.username} tried clearing the global room!", severity="error"))
+                        continue
+                    storage.clear_chat(user_msg.room_name)
+                    await self.broadcast_func(self, WsRoomChatClear(room_name=user_msg.room_name, username=self.username))
+                    if self.username != user_msg.username:
+                        await self.broadcast_func(self, WsSystemMessage(message=f"{self.username} tried clearing the chat as {user_msg.username}", severity="warning"))
                 else:
                     print(f"Got unhandled event: {user_msg}")
         except WebSocketDisconnect:

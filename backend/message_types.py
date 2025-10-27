@@ -92,7 +92,8 @@ class WsRoomCreate(BaseModel):
     event_type: Literal["room_create"] = "room_create"
     room: RoomInfo
 class WsRoomChatClear(BaseModel):
-    event_type: Literal["room_chat_cleared"] = "room_chat_cleared"
+    event_type: Literal["room_chat_clear"] = "room_chat_clear"
+    username: str
     room_name: str
 
 class WsRoomSwitchRequest(BaseModel):

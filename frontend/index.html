@@ -701,20 +701,17 @@
         // Clear chat functionality
         clearChatBtn.addEventListener('click', () => {
             if (currentRoom) {
-                // TODO: Implement
                 console.log(`Clearing chat for room: ${currentRoom}`);
-                clearChat(currentRoom);
-
-                // Clear UI
-                messagesContainer.innerHTML = '';
-                Toast.success(`Chat cleared for room: ${currentRoom}`);
+                window.wsSendRoomChatClear(globalThis.websocket, currentRoom);
             }
         });
 
         // Placeholder function for clearing chat
         function clearChat(roomName) {
-            // TODO: Implement
             console.log(`clearChat called for room: ${roomName}`);
+            // Clear UI
+            messagesContainer.innerHTML = '';
+            Toast.success(`Chat cleared for room: ${currentRoom}`);
         }
 
         // Add a room to the sidebar
@@ -1030,6 +1027,7 @@
         window.addRoomToList = addRoomToList;
         window.switchToRoom = switchToRoom;
         window.currentRoom = currentRoom;
+        window.clearChat = clearChat;
     </script>
 </body>
 </html>

@@ -113,6 +113,16 @@ function wsSendRoomSwitchReq(websocket, roomName) {
     ))
 }
 
+function wsSendRoomChatClear(websocket, roomName) {
+    websocket.send(JSON.stringify(
+        {
+            event_type: WS_EVENT_TYPES.room_chat_clear,
+            room_name: roomName,
+            username: window.chatConfig.username,
+        }
+    ))
+}
+
 function wsReceiveMessage(message) {
     console.log('Received message:' + JSON.stringify(message));
     switch (message.event_type) {
@@ -187,6 +197,9 @@ function wsReceiveMessage(message) {
             console.log(`Room switched to ${message.room_name}`);
             window.switchToRoom(message.room_name);
             break;
+        case WS_EVENT_TYPES.room_chat_clear:
+            window.clearChat(message.room_name);
+            break;
         default:
             console.log('Received unknown message:' + JSON.stringify(message));
     }
@@ -209,3 +222,4 @@ function createToastForSeverity(message, severity) {
 }
 
 window.wsSendRoomSwitchReq = wsSendRoomSwitchReq;
+window.wsSendRoomChatClear = wsSendRoomChatClear;
