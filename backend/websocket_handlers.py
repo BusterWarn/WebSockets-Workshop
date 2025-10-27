@@ -4,13 +4,11 @@ from typing import Callable, Any
 from datetime import datetime
 import uuid
 import asyncio
-import re
 
 from message_types import *
 from user_database import *
+from validation import *
 
-MAX_MESSAGE_LENGTH = 80
-MAX_USERNAME_LENGTH = 20
 QUEUE_MAX_SIZE = 50
 GLOBAL_ROOM_NAME = "Global"
 
@@ -20,6 +18,18 @@ class Storage:
         self.chat_messages: Dict[str, List[Dict]] = { GLOBAL_ROOM_NAME: [] }
         # Maps room_name to the rooms' WebSocketManager
         self.managers: Dict[str, WebSocketManager] = {}
+        self.all_users: Dict[str, Any] = {}
+
+    def is_username_taken(self, username: str) -> bool:
+        return username in self.all_users
+
+    def add_user(self, user: Any):
+        self.all_users[user.username] = user
+        return user
+
+    def remove_user(self, username: str):
+        if username in self.all_users:
+            self.all_users.pop(username)
 
     def get_chat_messages(self, room_name: str):
         if room_name not in self.chat_messages:
@@ -161,6 +171,7 @@ class WebSocketManager:
         # Give this user a UUID
         user = WebSocketConnection(websocket, str(uuid.uuid4()), username, broadcast_func)
         self.websockets[user.user_uuid] = user
+        storage.add_user(user)
 
         return user
 
@@ -178,27 +189,21 @@ class WebSocketManager:
         return await user.receive_loop()
 
     async def validate_username(self, user_websocket, username: str) -> bool:
-        if len(username) > MAX_USERNAME_LENGTH:
+        if username_too_long(username):
             print(f"Username is too long: '{username[0:MAX_USERNAME_LENGTH]}'...")
             await user_websocket.send_text(WsConnectionReject(response="Username is too long").model_dump_json())
             return False
-        # Checks that the username only contains [a-zA-Z0-9_ -]
-        if not re.match(r'^[a-zA-Z0-9_ -]+$', username):
+        # Checks that the username only contains valid characters
+        if contains_invalid_characters(username):
             print(f"Username contains invalid characters: '{username[0:MAX_USERNAME_LENGTH]}'...")
             await user_websocket.send_text(WsConnectionReject(response="Username contains invalid characters").model_dump_json())
             return False
-        if self.is_username_taken(username):
-            print(f"Username is already taken: '{username[0:MAX_USERNAME_LENGTH]}'...")
+        if storage.is_username_taken(username):
+            print(f"Username '{username[0:MAX_USERNAME_LENGTH]}' is already taken")
             await user_websocket.send_text(WsConnectionReject(response="Username is already taken").model_dump_json())
             return False
 
         return True
-
-    def is_username_taken(self, username: str) -> bool:
-        for user in self.websockets:
-            if self.websockets[user].username == username:
-                return True
-        return False
 
     async def send_connection_response(self, user: WebSocketConnection):
         await user.queue_message(WsConnectionResponse(username=user.username, user_id=user.user_uuid).model_dump_json())
@@ -275,6 +280,7 @@ async def ws_connect_user(websocket: WebSocket, room_name: str):
     finally:
         if user:
             await user.close()
+            storage.remove_user(user.username)
             if manager:
                 manager.websockets.pop(user.user_uuid)
 

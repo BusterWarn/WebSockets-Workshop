@@ -2,12 +2,11 @@ from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
-from typing import List, Dict
 import uvicorn
-import re
 
 from message_types import *
 from websocket_handlers import *
+from validation import *
 
 app = FastAPI(title="Chat Backend", version="1.0.0")
 app.mount("/chat/", StaticFiles(directory="../frontend"), name="chat")
@@ -26,8 +25,12 @@ async def https_send_message(username: str, chat_msg: ChatMessage, room_name: st
     username = chat_msg.username.strip()
     message = chat_msg.message.strip()
 
-    if not username or not re.match(r'^[a-zA-Z0-9_ -]+$', username):
+    if not username:
         raise HTTPException(status_code=400, detail="Username cannot be empty")
+    if username_too_long(username):
+        raise HTTPException(status_code=400, detail="Username is too long")
+    if contains_invalid_characters(username):
+        raise HTTPException(status_code=400, detail="Username contains invalid characters")
 
     if not message:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
