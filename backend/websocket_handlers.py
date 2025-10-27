@@ -22,14 +22,9 @@ class Storage:
 
     def is_username_taken(self, username: str) -> bool:
         return username in self.all_users
-
     def add_user(self, user: Any):
         self.all_users[user.username] = user
         return user
-
-    def clear_chat(self, room_name: str):
-        self.chat_messages[room_name] = []
-
     def remove_user(self, username: str):
         if username in self.all_users:
             self.all_users.pop(username)
@@ -38,14 +33,19 @@ class Storage:
         if room_name not in self.chat_messages:
             self.chat_messages[room_name] = []
         return self.chat_messages[room_name]
+    def add_to_chat(self, room_name: str, message: Dict):
+        if room_name not in self.chat_messages:
+            self.chat_messages[room_name] = []
+        self.chat_messages[room_name].append(message)
+    def clear_chat(self, room_name: str):
+        self.chat_messages[room_name] = []
 
     def get_manager(self, room_name: str):
         room_is_new = False
         if room_name not in self.managers:
-            self.managers[room_name] = WebSocketManager(room_name, storage.get_chat_messages(room_name), UserDatabase())
+            self.managers[room_name] = WebSocketManager(room_name, UserDatabase())
             room_is_new = True
         return (self.managers[room_name], room_is_new)
-
 
 storage = Storage()
 
@@ -151,10 +151,9 @@ class WebSocketConnection:
             print(f"Error closing websocket: {e}")
 
 class WebSocketManager:
-    def __init__(self, room_name: str, chat_messages: List, user_database: UserDatabase):
+    def __init__(self, room_name: str, user_database: UserDatabase):
         self.websockets = {}
         self.database = user_database
-        self.chat_messages = chat_messages
         self.creator = "<IN PROGRESS>"
         self.room_name = room_name
 
@@ -219,7 +218,7 @@ class WebSocketManager:
     async def send_connection_response(self, user: WebSocketConnection):
         await user.queue_message(WsConnectionResponse(username=user.username, user_id=user.user_uuid).model_dump_json())
     async def send_past_chats(self, sender: WebSocketConnection):
-        chats = self.chat_messages.copy()
+        chats = storage.get_chat_messages(self.room_name).copy()
         await sender.queue_message(WsMessageHistory(messages=chats).model_dump_json())
     async def send_online_users(self, sender: WebSocketConnection):
         users = self.get_users_online()
@@ -252,7 +251,7 @@ class WebSocketManager:
                 "message": message.message,
                 "timestamp": datetime.now().isoformat()
             }
-            self.chat_messages.append(new_message)
+            storage.add_to_chat(self.room_name, new_message)
 
     def get_users_online(self) -> List[WsUserStatus]:
         users: List[WsUserStatus] = []
