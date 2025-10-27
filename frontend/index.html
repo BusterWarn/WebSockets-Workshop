@@ -773,6 +773,7 @@
             if (window.innerWidth <= 768) {
                 membersSidebar.classList.remove('show');
             }
+            scrollToBottom();
         }
 
         // Update which room is marked as active
@@ -861,6 +862,7 @@
         }
 
         function addMessageToUI(message, type, username = null, currentTime = dayjs().format('h:mm A')) {
+            const shouldScroll = shouldAutoScroll();
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type === 'own' ? 'message-own' : ''}`;
 
@@ -887,6 +889,11 @@
 
             // Add animation
             messageDiv.classList.add('animate__animated', 'animate__fadeInUp');
+
+            // We don't want to scroll to the bottom if the user has manually scrolled up, but when close to the bottom, autoscrolling is probably what the user wants, so let's scroll!
+            if (shouldScroll) {
+                scrollToBottom();
+            }
         }
 
         function addSystemMessage(message) {
@@ -899,6 +906,16 @@
 
         function scrollToBottom() {
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function shouldAutoScroll() {
+            const distanceFromBottom =
+                        messagesContainer.scrollHeight -
+                        messagesContainer.scrollTop -
+                        messagesContainer.clientHeight;
+            const userIsNearBottom = distanceFromBottom < 280;
+            console.log(`Distance from bottom: ${distanceFromBottom}, user is near bottom: ${userIsNearBottom}`);
+            return userIsNearBottom;
         }
 
         // Member list management
