@@ -97,6 +97,57 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
+        .rooms-section {
+            border-bottom: 1px solid var(--light-purple);
+            padding: 0.5rem;
+        }
+
+        .rooms-section-header {
+            padding: 0.5rem 1rem;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .rooms-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .room-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin: 0.25rem 0;
+            border-radius: 10px;
+            background: rgba(40, 0, 113, 0.2);
+            color: var(--text-light);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .room-item:hover {
+            background: rgba(40, 0, 113, 0.4);
+            transform: translateX(5px);
+        }
+
+        .room-item.active {
+            background: var(--primary-purple);
+            border-color: var(--lighter-purple);
+        }
+
+        .room-item i {
+            margin-right: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .room-item .room-name {
+            flex: 1;
+        }
+
         .members-list {
             flex: 1;
             overflow-y: auto;
@@ -171,6 +222,42 @@
             font-weight: 600;
         }
 
+        .room-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-left: 1rem;
+        }
+
+        .room-indicator i {
+            color: var(--lighter-purple);
+        }
+
+        .clear-chat-btn {
+            background: var(--dark-red);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-left: 1rem;
+        }
+
+        .clear-chat-btn:hover {
+            background: #a61e1e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
         .online-indicator {
             width: 10px;
             height: 10px;
@@ -239,6 +326,44 @@
             border-radius: 10px;
             font-size: 0.85rem;
             color: var(--text-muted);
+        }
+
+        .typing-indicator {
+            display: flex;
+            justify-content: center;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+        }
+
+        .typing-indicator span {
+            height: 10px;
+            width: 10px;
+            background: var(--lighter-purple);
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 3px;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
         }
 
         /* Typing Indicator Above Input */
@@ -433,6 +558,16 @@
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
+
+            <div class="rooms-section">
+                <div class="rooms-section-header">
+                    <i class="bi bi-door-open me-2"></i>Rooms
+                </div>
+                <div class="rooms-list" id="roomsList">
+                    <!-- Rooms will be added here dynamically -->
+                </div>
+            </div>
+
             <div class="members-list" id="membersList">
                 <!-- Members will be added dynamically -->
             </div>
@@ -446,15 +581,25 @@
                     <button class="btn btn-toggle" id="toggleSidebar">
                         <i class="bi bi-list"></i>
                     </button>
-                    <h3>
+                    <h3 id="chatTitle">
                         WebSocket Workshop
                         <span class="online-indicator"></span>
+                        <span class="room-indicator" id="roomIndicator" style="display: none;">
+                            <i class="bi bi-hash"></i>
+                            <span id="currentRoomName"></span>
+                        </span>
                     </h3>
                 </div>
-                <button class="btn btn-toggle" id="showMembers">
-                    <i class="bi bi-people-fill"></i>
-                    <span class="badge bg-success ms-1" id="online-count">0 online</span>
-                </button>
+                <div>
+                    <button class="clear-chat-btn" id="clearChatBtn" style="display: none;">
+                        <i class="bi bi-trash"></i>
+                        Clear Chat
+                    </button>
+                    <button class="btn btn-toggle" id="showMembers">
+                        <i class="bi bi-people-fill"></i>
+                        <span class="badge bg-success ms-1" id="online-count">0 online</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Chat Messages -->
@@ -516,6 +661,8 @@
             Toast.error('Configuration failed. Please check your settings.');
         }
 
+        let currentRoom = window.chatConfig.room_name || '';
+
         // Try connecting to the server via WebSockets
         wsConnectUser(window.getWsAddress(), window.chatConfig.username);
 
@@ -529,9 +676,127 @@
         const showMembers = document.getElementById('showMembers');
         const membersList = document.getElementById('membersList');
 
+        const roomsList = document.getElementById('roomsList');
+        const chatTitle = document.getElementById('chatTitle');
+        const roomIndicator = document.getElementById('roomIndicator');
+        const currentRoomName = document.getElementById('currentRoomName');
+        const clearChatBtn = document.getElementById('clearChatBtn');
+
         // Typing indicator elements
         const typingIndicatorContainer = document.getElementById('typingIndicatorAboveInput');
         const typingTextDisplay = document.getElementById('typingTextDisplay');
+
+        // Update header based on current room
+        function updateHeaderForRoom() {
+            if (currentRoom) {
+                roomIndicator.style.display = 'inline-flex';
+                currentRoomName.textContent = currentRoom;
+                clearChatBtn.style.display = 'inline-flex';
+            } else {
+                roomIndicator.style.display = 'none';
+                clearChatBtn.style.display = 'none';
+            }
+        }
+
+        // Clear chat functionality
+        clearChatBtn.addEventListener('click', () => {
+            if (currentRoom) {
+                // TODO: Implement
+                console.log(`Clearing chat for room: ${currentRoom}`);
+                clearChat(currentRoom);
+
+                // Clear UI
+                messagesContainer.innerHTML = '';
+                Toast.success(`Chat cleared for room: ${currentRoom}`);
+            }
+        });
+
+        // Placeholder function for clearing chat
+        function clearChat(roomName) {
+            // TODO: Implement
+            console.log(`clearChat called for room: ${roomName}`);
+        }
+
+        // Add a room to the sidebar
+        function addRoomToList(roomName, isActive = false) {
+            const roomDiv = document.createElement('div');
+            roomDiv.className = `room-item${isActive ? ' active' : ''}`;
+            roomDiv.setAttribute('data-room', roomName);
+
+            const displayName = roomName || 'Global';
+            const icon = roomName ? 'bi-hash' : 'bi-globe';
+
+            roomDiv.innerHTML = `
+                <i class="bi ${icon}"></i>
+                <span class="room-name">${displayName}</span>
+            `;
+
+            roomDiv.addEventListener('click', () => {
+                switchToRoom(roomName);
+            });
+
+            roomsList.appendChild(roomDiv);
+        }
+
+        // Switch to a different room
+        function switchToRoom(roomName) {
+            if (roomName === currentRoom) {
+                Toast.info(`Already in room: ${roomName || 'Global'}`);
+                return;
+            }
+
+            const previousRoom = currentRoom;
+            currentRoom = roomName;
+
+            // Update UI
+            updateRoomActiveState(roomName);
+            updateHeaderForRoom();
+
+            // Clear messages
+            messagesContainer.innerHTML = '';
+
+            const displayName = roomName || 'Global';
+            Toast.success(`Switched to room: ${displayName}`);
+
+            // Log for now (will integrate with backend later)
+            console.log(`Switching from room "${previousRoom}" to room "${roomName}"`);
+
+            // For now, simulate system message. TODO: Implement
+            addSystemMessage(`You joined the ${displayName} room`);
+
+            // Close sidebar on mobile
+            if (window.innerWidth <= 768) {
+                membersSidebar.classList.remove('show');
+            }
+        }
+
+        // Update which room is marked as active
+        function updateRoomActiveState(roomName) {
+            const allRooms = roomsList.querySelectorAll('.room-item');
+            allRooms.forEach(room => {
+                const roomData = room.getAttribute('data-room');
+                if (roomData === roomName) {
+                    room.classList.add('active');
+                } else {
+                    room.classList.remove('active');
+                }
+            });
+        }
+
+        // TODO: Implement
+        function initializeRooms() {
+            // Add global/default room
+            addRoomToList('', currentRoom === '');
+
+            // Add stub rooms
+            addRoomToList('room_1', currentRoom === 'room_1');
+            addRoomToList('room_2', currentRoom === 'room_2');
+
+            // Show toast on initialization
+            if (currentRoom) {
+                Toast.info(`Connected to room: ${currentRoom}`);
+            }
+        }
 
         // Sidebar functionality
         toggleSidebar.addEventListener('click', () => {
@@ -728,6 +993,8 @@
         }
 
         addSelfAsOnline();
+        initializeRooms();
+        updateHeaderForRoom();
 
         document.addEventListener('DOMContentLoaded', async function() {
             scrollToBottom();
@@ -749,6 +1016,9 @@
         window.removeMemberFromList = removeMemberFromList;
         window.updateMemberStatus = updateMemberStatus;
         window.updateOnlineCount = updateOnlineCount;
+        window.addRoomToList = addRoomToList;
+        window.switchToRoom = switchToRoom;
+        window.currentRoom = currentRoom;
     </script>
 </body>
 </html>
