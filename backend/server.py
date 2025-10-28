@@ -53,6 +53,9 @@ async def send_message(chat_msg: ChatMessage):
 
 @app.post("/{room_name}/send-message")
 async def send_message_room(chat_msg: ChatMessage, room_name: str):
+    room_validation = validate_room_name(room_name)
+    if room_validation  != "":
+        raise HTTPException(status_code=400, detail=room_validation)
     return await https_send_message(chat_msg.username, chat_msg, room_name)
 
 @app.get("/messages")
@@ -63,6 +66,9 @@ async def get_all_messages():
 @app.get("/{room_name}/messages/")
 async def get_all_messages_room(room_name: str):
     """Get all chat messages"""
+    room_validation = validate_room_name(room_name)
+    if room_validation  != "":
+        raise HTTPException(status_code=400, detail=room_validation)
     return {"messages": storage.get_chat_messages(room_name)}
 
 @app.get("/rooms")

@@ -107,6 +107,10 @@ class WebSocketConnection:
                 elif isinstance(user_msg, WsRoomSwitchRequest):
                     return user_msg
                 elif isinstance(user_msg, WsRoomCreate):
+                    room_validation = validate_room_name(user_msg.room.room_name)
+                    if room_validation  != "":
+                        await self.websocket.send_text(WsSystemMessage(message=f"{self.username} tried creating a room with an invalid name: {room_validation}", severity="error").model_dump_json())
+                        continue
                     (_, room_is_new) = await create_and_broadcast_new_room(user_msg.room.room_name, self.username)
                     if not room_is_new:
                         await self.websocket.send_text(WsSystemMessage(message=f"{self.username} tried creating a room that already exists!", severity="error").model_dump_json())
@@ -273,6 +277,9 @@ async def ws_connect_user(websocket: WebSocket, room_name: str):
     manager = None
     try:
         await websocket.accept()
+        if validate_room_name(room_name) != "":
+            await websocket.send_text(WsConnectionReject(response=validate_room_name(room_name)).model_dump_json())
+            return
         (manager, room_is_new) = storage.get_manager(room_name)
         user = await manager.setup_user(websocket)
         if not user:

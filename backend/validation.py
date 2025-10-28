@@ -10,3 +10,11 @@ def username_too_long(username: str) -> bool:
 def contains_invalid_characters(username: str) -> bool:
     """Checks that the username only contains valid characters"""
     return not re.match(r'^[a-zA-ZåäöÅÄÖ0-9_ -]+$', username)
+
+def validate_room_name(room_name: str) -> str:
+    """Checks that the room name is valid"""
+    if len(room_name) > MAX_USERNAME_LENGTH:
+        return "Room name is too long"
+    if contains_invalid_characters(room_name):
+        return "Room name contains invalid characters"
+    return ""
