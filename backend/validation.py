@@ -1,6 +1,6 @@
 import re
 
-MAX_MESSAGE_LENGTH = 80
+MAX_MESSAGE_LENGTH = 1000
 MAX_USERNAME_LENGTH = 20
 
 def username_too_long(username: str) -> bool:
