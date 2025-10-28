@@ -714,8 +714,25 @@
             Toast.success(`Chat cleared for room: ${currentRoom}`);
         }
 
+        function checkRoomExists(roomName) {
+            const allRooms = roomsList.querySelectorAll('.room-item');
+            for (let i = 0; i < allRooms.length; i++) {
+                const roomData = allRooms[i].getAttribute('data-room');
+                if (roomData === roomName) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         // Add a room to the sidebar
         function addRoomToList(roomName, isActive = false) {
+            console.log(`addRoomToList called for room: ${roomName}`);
+            if (checkRoomExists(roomName)) {
+                console.log(`Room ${roomName} already exists`);
+                return;
+            }
+
             const roomDiv = document.createElement('div');
             roomDiv.className = `room-item${isActive ? ' active' : ''}`;
             roomDiv.setAttribute('data-room', roomName);
