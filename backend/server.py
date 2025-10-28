@@ -9,7 +9,7 @@ from websocket_handlers import *
 from validation import *
 
 app = FastAPI(title="Chat Backend", version="1.0.0")
-app.mount("/chat/", StaticFiles(directory="../frontend"), name="chat")
+app.mount("/chat/", StaticFiles(directory="./frontend"), name="chat")
 
 # Insert the global room into the storage and give it a WebSocketManager
 storage.managers[GLOBAL_ROOM_NAME] = WebSocketManager(GLOBAL_ROOM_NAME, UserDatabase())
