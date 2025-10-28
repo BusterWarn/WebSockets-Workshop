@@ -174,6 +174,9 @@ function wsReceiveMessage(message) {
                 return;
             }
             Toast.info(`User ${message.username} left the chat`);
+            // We update the member status here, in the case they were typing while leaving, this
+            // ensures a user won't be left with a typing indicator above the chat input
+            updateMemberStatus(message.username, 'online');
             window.removeMemberFromList(message.username);
             window.updateOnlineCount();
             break;
