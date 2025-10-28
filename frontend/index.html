@@ -661,7 +661,7 @@
             Toast.error('Configuration failed. Please check your settings.');
         }
 
-        let currentRoom = window.chatConfig.room_name || '';
+        let currentRoom = window.chatConfig.room_name || globalThis.GLOBAL_ROOM_NAME;
 
         // Try connecting to the server via WebSockets
         wsConnectUser(window.getWsAddress(), window.chatConfig.username);
@@ -720,12 +720,11 @@
             roomDiv.className = `room-item${isActive ? ' active' : ''}`;
             roomDiv.setAttribute('data-room', roomName);
 
-            const displayName = roomName || globalThis.GLOBAL_ROOM_NAME;
-            const icon = roomName ? 'bi-hash' : 'bi-globe';
+            const icon = roomName != globalThis.GLOBAL_ROOM_NAME ? 'bi-hash' : 'bi-globe';
 
             roomDiv.innerHTML = `
                 <i class="bi ${icon}"></i>
-                <span class="room-name">${displayName}</span>
+                <span class="room-name">${roomName}</span>
             `;
 
             roomDiv.addEventListener('click', () => {
@@ -737,13 +736,12 @@
 
         function requestRoomSwitch(roomName) {
             if (roomName === currentRoom) {
-                Toast.info(`Already in room: ${roomName || globalThis.GLOBAL_ROOM_NAME}`);
+                Toast.info(`Already in room: ${roomName}`);
                 return;
             }
 
-            const displayName = roomName || globalThis.GLOBAL_ROOM_NAME;
-            Toast.info(`Initiating room switch to: ${displayName}`);
-            window.wsSendRoomSwitchReq(globalThis.websocket, displayName);
+            Toast.info(`Initiating room switch to: ${roomName}`);
+            window.wsSendRoomSwitchReq(globalThis.websocket, roomName);
         }
 
         // Switch to a different room
@@ -758,14 +756,12 @@
             // Clear messages
             messagesContainer.innerHTML = '';
 
-            const displayName = roomName || globalThis.GLOBAL_ROOM_NAME;
-            Toast.success(`Switched to room: ${displayName}`);
+            Toast.success(`Switched to room: ${roomName}`);
 
             // Log for now (will integrate with backend later)
             console.log(`Switching from room "${previousRoom}" to room "${roomName}"`);
 
-            // For now, simulate system message. TODO: Implement
-            addSystemMessage(`You joined the ${displayName} room`);
+            addSystemMessage(`You joined the ${roomName} room`);
 
             window.chatConfig.room_name = roomName;
 
@@ -789,10 +785,9 @@
             });
         }
 
-        // TODO: Implement
         function initializeRooms() {
             // Add global/default room
-            addRoomToList('', currentRoom === '');
+            addRoomToList(globalThis.GLOBAL_ROOM_NAME, currentRoom === globalThis.GLOBAL_ROOM_NAME);
 
             // Show toast on initialization
             if (currentRoom) {
