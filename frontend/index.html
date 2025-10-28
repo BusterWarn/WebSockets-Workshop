@@ -875,8 +875,9 @@
         document.getElementById('createRoomBtn').addEventListener('click', () => {
             const roomName = prompt('Enter room name:');
             if (roomName && roomName.trim()) {
-                console.log('TODO: Create room with backend integration');
                 console.log('Room name:', roomName.trim());
+                Toast.info(`Sending room create request ${roomName.trim()}`);
+                window.wsSendRoomCreate(globalThis.websocket, roomName.trim());
             }
         });
 

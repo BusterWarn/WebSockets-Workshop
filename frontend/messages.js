@@ -123,6 +123,19 @@ function wsSendRoomChatClear(websocket, roomName) {
     ))
 }
 
+function wsSendRoomCreate(websocket, roomName) {
+    websocket.send(JSON.stringify(
+        {
+            event_type: WS_EVENT_TYPES.room_create,
+            room: {
+                room_name: roomName,
+                room_creator: window.chatConfig.username,
+                connected_users: [],
+            }
+        }
+    ))
+}
+
 function wsReceiveMessage(message) {
     console.log('Received message:' + JSON.stringify(message));
     switch (message.event_type) {
@@ -223,3 +236,4 @@ function createToastForSeverity(message, severity) {
 
 window.wsSendRoomSwitchReq = wsSendRoomSwitchReq;
 window.wsSendRoomChatClear = wsSendRoomChatClear;
+window.wsSendRoomCreate = wsSendRoomCreate;

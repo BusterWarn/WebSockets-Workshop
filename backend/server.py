@@ -38,10 +38,7 @@ async def https_send_message(username: str, chat_msg: ChatMessage, room_name: st
     if not message:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
-    (manager, room_is_new) = storage.get_manager(room_name)
-    if room_is_new:
-        manager.creator = username
-        await broadcast_new_room_all(storage.managers, room_name, username)
+    (manager, _) = await create_and_broadcast_new_room(room_name, username)
     await manager.server_broadcast(WsMessage(username=username, message=message))
 
     return {"status": "success", "message": "Message sent"}

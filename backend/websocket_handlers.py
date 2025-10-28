@@ -1,6 +1,6 @@
 from fastapi import  WebSocket, WebSocketDisconnect
 from pydantic import ValidationError, TypeAdapter
-from typing import Callable, Any
+from typing import Callable, Any, Tuple
 from datetime import datetime
 import uuid
 import asyncio
@@ -106,6 +106,10 @@ class WebSocketConnection:
                     await self.broadcast_func(self, user_msg)
                 elif isinstance(user_msg, WsRoomSwitchRequest):
                     return user_msg
+                elif isinstance(user_msg, WsRoomCreate):
+                    (_, room_is_new) = await create_and_broadcast_new_room(user_msg.room.room_name, self.username)
+                    if not room_is_new:
+                        await self.websocket.send_text(WsSystemMessage(message=f"{self.username} tried creating a room that already exists!", severity="error").model_dump_json())
                 elif isinstance(user_msg, WsRoomChatClear):
                     if user_msg.room_name == GLOBAL_ROOM_NAME:
                         await self.broadcast_func(self, WsSystemMessage(message=f"{self.username} tried clearing the global room!", severity="error"))
@@ -302,6 +306,15 @@ def gather_rooms(managers: Dict[str, WebSocketManager]) -> List[RoomInfo]:
         users = [user.username for user in manager.get_users_online()]
         rooms.append(RoomInfo(room_name=room_name, room_creator=manager.creator, connected_users=users))
     return rooms
+
+async def create_and_broadcast_new_room(room_name: str, username: str) -> Tuple[WebSocketManager, bool]:
+    (manager, room_is_new) = storage.get_manager(room_name)
+    if room_is_new:
+        manager.creator = username
+        await broadcast_new_room_all(storage.managers, room_name, username)
+    else:
+        print(f"Room {room_name} already exists")
+    return (manager, room_is_new)
 
 async def broadcast_new_room_all(managers: Dict[str, WebSocketManager], room_name: str, username: str):
     await broadcast_all_rooms(managers, WsRoomCreate(room=RoomInfo(room_name=room_name, room_creator=username, connected_users=[username])))
