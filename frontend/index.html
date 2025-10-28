@@ -109,6 +109,24 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-create-room {
+            background: var(--lighter-purple);
+            border: none;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .btn-create-room:hover {
+            background: var(--primary-purple);
         }
 
         .rooms-list {
@@ -561,7 +579,8 @@
 
             <div class="rooms-section">
                 <div class="rooms-section-header">
-                    <i class="bi bi-door-open me-2"></i>Rooms
+                    <span><i class="bi bi-door-open me-2"></i>Rooms</span>
+                    <button class="btn-create-room" id="createRoomBtn">+ New</button>
                 </div>
                 <div class="rooms-list" id="roomsList">
                     <!-- Rooms will be added here dynamically -->
@@ -851,6 +870,15 @@
 
         // Send message on button click
         sendButton.addEventListener('click', sendMsg);
+
+        // Create room button click
+        document.getElementById('createRoomBtn').addEventListener('click', () => {
+            const roomName = prompt('Enter room name:');
+            if (roomName && roomName.trim()) {
+                console.log('TODO: Create room with backend integration');
+                console.log('Room name:', roomName.trim());
+            }
+        });
 
         function sendMsg() {
             const message = messageInput.value.trim();
