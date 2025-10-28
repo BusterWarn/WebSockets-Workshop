@@ -45,6 +45,7 @@ class Storage:
         if room_name not in self.managers:
             self.managers[room_name] = WebSocketManager(room_name, UserDatabase())
             room_is_new = True
+            print(f"Created new room: {room_name}")
         return (self.managers[room_name], room_is_new)
 
 storage = Storage()
