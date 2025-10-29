@@ -91,13 +91,14 @@ Using different query parameters in multiple browser tabs allows you to simulate
 
 ## Message Sequences
 The sequence diagram below details some of the messaging sequences that the client will have to follow.
-Note that the messaging is per room, so a broadcast is always associated with a specific room, and will not be sent to clients in the other rooms.
+Note that the messaging is per room, so a `broadcast` is always associated with a specific room, and will not be sent to clients in the other rooms.
+The exception is `BroadcastToAllRooms` that will, as the name suggests, send to all clients in all rooms.
 
 For the typing events, these are used to notfiy other users that a user has started, or stopped, typing text into the input box. It is up to the individual clients themselves to report their typing status via the `WsTypingEvent`.
 
 In the case of the room switching, the `WsUserLeaveEvent` will be broadcast to the user's previous room, and the `WsUserJoinEvent` will be broadcast to the user's new room. A room switch is not complete until the user has received a `WsRoomSwitchResponse`.
 
-![Message Sequences](sequences/ConnectionSequence.png "Message Sequences")
+![Message Sequences](sequences/out/ConnectionSequence/ConnectionSequence.png "Message Sequences")
 
 ## Available Helper Functions
 You may use these helper functions:
