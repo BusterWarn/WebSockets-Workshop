@@ -12,10 +12,48 @@ Your goal is to connect the frontend to the provided chat backend using WebSocke
 - You will be given an IP address to our hosted backend that you will be able to communicate with, set the ip address in `globalThis.backend_server_address`
 - There is a multitude of different events that the server will send, for instance when a user joins or leaves, when a message is sent, when a new room is created, etc.
 
+## 🎯 Workshop Structure
+
+You have **only 2 files**:
+
+1. **`workshop.js`** ← **YOU WORK HERE** - Implement WebSocket functionality
+2. **`index.html`** ← UI (don't edit this, just open it in browser)
+
+The HTML file is intentionally large and unreadable - it's a *feature*, not a bug! This forces you to focus only on the WebSocket implementation in `workshop.js`.
+
 ## Miscellaneous Tips
+
+
+### JavaScript
+
+New to JavaScript? Use a cheat sheet: [htmlcheatsheet.com/js/](https://htmlcheatsheet.com/js/).
+
 The JavaScript WebSocket API is largely event-driven, have a look at the MDN documentation for the various events that are available:
 [Writing WebSocket client applications](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications)
 
+### WSL users (Windows Subsystem for Linux)
+
+If you're using WSL and having trouble opening the HTML file, you can try opening a local server on `localhost` with any of the following steps:
+```bash
+# From your working directory with the index.html file
+
+# with Python 3
+python3 -m http.server 8080
+
+# with PHP
+php -S localhost:8080
+
+# with Node.js http-server (no install needed)
+npx http-server -p 8080
+
+# with Ruby
+ruby -run -ehttpd . -p8080
+
+# with darkhttpd (needs: apt install darkhttpd)
+darkhttpd . --port 8080
+```
+
+### Messages and Events
 
 The messages that you will send and receive are defined in the backend directory, `backend/message_types.py`.
 In particular, the messages that are defined in the `WsEvent` union:
@@ -79,4 +117,95 @@ Toast.info(message)
 window.chatConfig.username
 window.chatConfig.room_name
 window.getWsAddress()  // Returns ws:// or wss:// URL
+```
+
+## 📚 The 5 Assignments
+
+Complete these in `workshop.js`:
+
+### Assignment 1: WebSocket Connection
+- Create WebSocket connection
+- Add event listeners (open, close, error, message)
+- Send connection request
+- Handle acceptance/rejection
+
+**Goal:** Successfully connect to the server
+
+### Assignment 2: Send & Receive Messages
+- Implement `wsSendMessage()`
+- Handle incoming messages in `wsReceiveMessage()`
+- Display messages from other users
+- Load message history
+
+**Goal:** Chat with other users
+
+### Assignment 3: User Notifications
+- Handle `users_online` event
+- Show toast when users join
+- Show toast when users leave
+- Display system messages
+
+**Goal:** See when users come and go
+
+### Assignment 4: Typing Indicators
+- Detect when user types
+- Send typing status to server
+- Handle timeout after inactivity
+- Update UI for other users
+
+**Goal:** See "User is typing..." indicator
+
+### Assignment 5: Room Management
+- Implement room switching
+- Handle room creation events
+- Implement chat clearing
+- Update UI for different rooms
+
+**Goal:** Switch between chat rooms
+
+## 💡 Implementation Tips
+
+### Assignment 1 Tips
+```javascript
+// Remember to stringify JSON
+websocket.send(JSON.stringify({ ... }))
+
+// And parse incoming messages
+const message = JSON.parse(msg.data)
+```
+
+### Assignment 2 Tips
+```javascript
+// Check if message is from yourself
+if (message.username === window.chatConfig.username) {
+    // Don't add to UI - you already did that when sending
+    return;
+}
+```
+
+### Assignment 3 Tips
+```javascript
+// Always check if it's yourself before showing notifications
+if (message.username === window.chatConfig.username) {
+    return;
+}
+```
+
+### Assignment 4 Tips
+```javascript
+// Update lastActivity on every keypress
+globalThis.lastActivity = performance.now()
+
+// Check timeout
+if ((performance.now() - globalThis.lastActivity) > 2500) {
+    // User stopped typing
+}
+```
+
+### Assignment 5 Tips
+```javascript
+// Skip Global room in lists
+if (room.room_name === "Global") {
+    return;
+}
 ```
