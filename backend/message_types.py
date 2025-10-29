@@ -1,43 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import List, Dict, Literal, Union, Annotated
 
-
-# Pydantic models for request/response
-class ChatMessage(BaseModel):
-    username: str
-    message: str
-
-class UserConnection(BaseModel):
-    username: str
-
-class UserConnectionResponse(BaseModel):
-    response: str
-
-class ChatData(BaseModel):
-    messages: List[Dict]
-    connected_users: List[Dict]
-
-## Login/Register
-class WsRegisterRequest(BaseModel):
-    username: str
-    password: str
-class WsRegisterResponse(BaseModel):
-    response: str
-
-class WsLoginRequest(BaseModel):
-    username: str
-    password: str
-class WsLoginResponse(BaseModel):
-    response: str
-
-class WsCreateGroupRequest(BaseModel):
-    group_name: str
-class WsCreateGroupResponse(BaseModel):
-    response: str
-class WsAddUserToGroupRequest(BaseModel):
-    group_name: str
-    username: str
-
 ## Base structures
 class WsUserStatus(BaseModel):
     username: str
@@ -55,21 +18,23 @@ class WsConnectionResponse(BaseModel):
 class WsConnectionReject(BaseModel):
     event_type: Literal["connection_reject"] = "connection_reject"
     response: str
-class WsMessage(BaseModel):
-    event_type: Literal["message"] = "message"
-    username: str
-    message: str
-class WsMessageHistory(BaseModel):
-    event_type: Literal["message_history"] = "message_history"
-    messages: List[Dict]
-class WsTypingEvent(BaseModel):
-    event_type: Literal["typing"] = "typing"
-    username: str
-    is_typing: bool
 class WsSystemMessage(BaseModel):
     event_type: Literal["system"] = "system"
     severity: Literal["success", "info", "warning", "error"]
     message: str
+### Messaging
+class WsMessageHistory(BaseModel):
+    event_type: Literal["message_history"] = "message_history"
+    messages: List[Dict]
+class WsMessage(BaseModel):
+    event_type: Literal["message"] = "message"
+    username: str
+    message: str
+### User events
+class WsTypingEvent(BaseModel):
+    event_type: Literal["typing"] = "typing"
+    username: str
+    is_typing: bool
 class WsUsersOnline(BaseModel):
     event_type: Literal["users_online"] = "users_online"
     users: List[WsUserStatus]
@@ -103,6 +68,9 @@ class WsRoomSwitchResponse(BaseModel):
     event_type: Literal["room_switch_response"] = "room_switch_response"
     room_name: str
 
+# The main event type, used for all WebSocket events
+# The event_type field is used to denote the type of event, so it is possible to e.g.
+# switch over the incoming message and determine its type on the receiver side.
 WsEvent = Annotated[
     Union[
         WsConnectionRequest,
@@ -123,3 +91,40 @@ WsEvent = Annotated[
     ],
     Field(discriminator="event_type"),
 ]
+
+# Pydantic models for request/response with the HTTP API
+class ChatMessage(BaseModel):
+    username: str
+    message: str
+
+class UserConnection(BaseModel):
+    username: str
+
+class UserConnectionResponse(BaseModel):
+    response: str
+
+class ChatData(BaseModel):
+    messages: List[Dict]
+    connected_users: List[Dict]
+
+# Unimplemented for now, will be added in case more work is needed!
+## Login/Register
+class WsRegisterRequest(BaseModel):
+    username: str
+    password: str
+class WsRegisterResponse(BaseModel):
+    response: str
+
+class WsLoginRequest(BaseModel):
+    username: str
+    password: str
+class WsLoginResponse(BaseModel):
+    response: str
+
+class WsCreateGroupRequest(BaseModel):
+    group_name: str
+class WsCreateGroupResponse(BaseModel):
+    response: str
+class WsAddUserToGroupRequest(BaseModel):
+    group_name: str
+    username: str
