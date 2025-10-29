@@ -1,0 +1,49 @@
+@startuml
+
+actor Client
+participant Server
+collections OtherClients
+
+== Connection Setup ==
+
+Client -> Server : WsConnectionRequest(username)
+
+alt connection successful
+    Server -> Client : WsConnectionResponse(username, user_id)
+else connection failure
+    Server -> Client : WsConnectionReject
+    note over Server
+        Reasons for failure:
+        1. Username contains invalid characters
+        2. Username is too long (> 20 characters)
+        3. Username is already taken
+        4. Room does not exist (specified in websocket address)
+    end note
+end
+
+== Room Switch ==
+
+Client -> Server : WsRoomSwitchRequest(room_name)
+
+alt room switch successful
+    Server -> Client : WsRoomSwitchResponse(room_name)
+    Server -> Client : WsMessageHistory(List(Message))
+    Server -> Client : WsUsersOnline(List(WsUserStatus))
+    Server -> OtherClients: Broadcast(WsUserLeaveEvent(username, room_name))
+    Server -> OtherClients: Broadcast(WsUserJoinEvent(username, room_name))
+else room switch failure
+    Server -> Client : WsSystemMessage(message, severity=error)
+end
+
+== Typing Events ==
+
+Client -> Client : User starts typing
+Client -> Server : WsTypingEvent(username, is_typing=true)
+Server -> OtherClients: Broadcast(WsTypingEvent(username, is_typing=true))
+
+Client -> Client : User stops typing
+Client -> Server : WsTypingEvent(username, is_typing=false)
+Server -> OtherClients: Broadcast(WsTypingEvent(username, is_typing=false))
+
+
+@enduml
