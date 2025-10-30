@@ -21,6 +21,8 @@ You have **only 2 files**:
 
 The HTML file is intentionally large and unreadable - it's a *feature*, not a bug! This forces you to focus only on the WebSocket implementation in `workshop.js`.
 
+You will not have to look at the backend code, but if you are interested it is available here: [WebSockets-Workshop-Backend](https://github.com/TorVallin/WebSockets-Workshop-Backend).
+
 ## Tips
 
 WebSocket docs from MDN: [Writing WebSocket client applications](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications)
