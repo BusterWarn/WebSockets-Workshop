@@ -21,37 +21,13 @@ You have **only 2 files**:
 
 The HTML file is intentionally large and unreadable - it's a *feature*, not a bug! This forces you to focus only on the WebSocket implementation in `workshop.js`.
 
-## Miscellaneous Tips
+## Tips
 
+WebSocket docs from MDN: [Writing WebSocket client applications](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications)
 
 ### JavaScript
 
 New to JavaScript? Use a cheat sheet: [htmlcheatsheet.com/js/](https://htmlcheatsheet.com/js/).
-
-The JavaScript WebSocket API is largely event-driven, have a look at the MDN documentation for the various events that are available:
-[Writing WebSocket client applications](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications)
-
-### WSL users (Windows Subsystem for Linux)
-
-If you're using WSL and having trouble opening the HTML file, you can try opening a local server on `localhost` with any of the following steps:
-```bash
-# From your working directory with the index.html file
-
-# with Python 3
-python3 -m http.server 8080
-
-# with PHP
-php -S localhost:8080
-
-# with Node.js http-server (no install needed)
-npx http-server -p 8080
-
-# with Ruby
-ruby -run -ehttpd . -p8080
-
-# with darkhttpd (needs: apt install darkhttpd)
-darkhttpd . --port 8080
-```
 
 ### Messages and Events
 
@@ -88,6 +64,30 @@ To set the room name you can do **one** of the following:
     - You may also set the username in this manner: `<some_path>/frontend/index.html?room_name=some_room_name&username=some_username`
 
 Using different query parameters in multiple browser tabs allows you to simulate several users and verify that your chat logic behaves correctly.
+
+
+### WSL users (Windows Subsystem for Linux)
+
+If you're using WSL and having trouble opening the HTML file, you can try opening a local server on `localhost` with any of the following steps:
+```bash
+# From your working directory with the index.html file
+
+# with Python 3
+python3 -m http.server 8080
+
+# with PHP
+php -S localhost:8080
+
+# with Node.js http-server (no install needed)
+npx http-server -p 8080
+
+# with Ruby
+ruby -run -ehttpd . -p8080
+
+# with darkhttpd (needs: apt install darkhttpd)
+darkhttpd . --port 8080
+```
+
 
 ## Message Sequences
 The sequence diagram below details some of the messaging sequences that the client will have to follow.
@@ -135,6 +135,7 @@ window.getWsAddress()  // Returns ws:// or wss:// URL
 Complete these in `workshop.js`:
 
 ### Assignment 1: WebSocket Connection
+- Read this documentation: [Writing WebSocket client applications](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications)
 - Create WebSocket connection
 - Add event listeners (open, close, error, message)
 - Send connection request
@@ -178,6 +179,9 @@ Complete these in `workshop.js`:
 
 ### Assignment 1 Tips
 ```javascript
+// Use global websocket
+globalThis.websocket = // ...
+
 // Remember to stringify JSON
 websocket.send(JSON.stringify({ ... }))
 

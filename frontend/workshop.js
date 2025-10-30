@@ -73,46 +73,33 @@ const WS_EVENT_TYPES = {
 // =============================================================================
 
 /**
- * ASSIGNMENT 1: Connect to the WebSocket server and handle the connection handshake
- *
- * Server reference:
- * - websocket_handlers.py: ws_connect_user(), WebSocketManager.setup_user()
- * - message_types.py: WsConnectionRequest, WsConnectionResponse, WsConnectionReject
- *
- * Protocol flow:
- * 1. Client opens WebSocket connection
- * 2. Client sends WsConnectionRequest with username
- * 3. Server validates username and responds with:
- *    - WsConnectionResponse (accepted) with username and user_id, OR
- *    - WsConnectionReject (rejected) with error message
+ * ASSIGNMENT 1 - Create Websocket and assign to globalThis.websocket.
+ *                Add event listeners: 'open', 'error', 'close', 'message'
  *
  * @param {string} serverUrl - The WebSocket server URL (e.g., "ws://localhost:5000/ws")
- * @param {string} username - The username to connect with
+ * @param {string} username - Your username from config
  */
-function wsConnectUser(serverUrl, username) {
+function wsConnectUser(websocket, username) {
     try {
-        // TODO 1.1: Create a new WebSocket connection to serverUrl
+        // TODO: Create a new WebSocket connection to serverUrl
         // Hint: globalThis.websocket = new WebSocket(serverUrl);
 
+        // NOTE: use documentation: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications
 
-        // TODO 1.2: Add 'error' event listener
-        // Hint: Log the error to console
-
-
-        // TODO 1.3: Add 'open' event listener
+        // TODO: Add 'open' event listener
         // When the connection opens, send a connection request to the server
-        // Hint: Look at WsConnectionRequest in message_types.py
-        // The message should be: { event_type: 'connection_request', username: username }
+        // The message should be: { event_type: WS_EVENT_TYPES.connection_request, username: username }
+        // Hint: JSON.stringify({ /* json data */ })
 
+        // TODO: Add 'error' event listener
+        // Log the error to console and toast it
 
-        // TODO 1.4: Add 'close' event listener
+        // TODO: Add 'close' event listener
         // When connection closes, clean up by setting globalThis.websocket = null
 
-
-        // TODO 1.5: Add 'message' event listener
+        // TODO: Add 'message' event listener
         // Parse the incoming message and pass it to wsReceiveMessage()
         // Hint: const message = JSON.parse(msg.data);
-
 
     } catch (error) {
         console.error('Error connecting user:', error);
@@ -137,13 +124,19 @@ function wsConnectUser(serverUrl, username) {
  * @param {string} message - The message text to send
  */
 function wsSendMessage(websocket, message) {
-    // TODO 2.1: Check if websocket exists, throw error if not
+    if (!websocket || websocket.CLOSED) {
+      Toast.error('WebSocket connection not established');
+      return;
+    }
 
 
     // TODO 2.2: Send a message to the server
     // Look at WsMessage structure in message_types.py
     // Required fields: event_type, username, message
     // Hint: websocket.send(JSON.stringify({ ... }))
+    // Should look like this: { event_type: WS_EVENT_TYPES.message, username: string, message: string }
+
+    // What happens if you use another username? 🤔
 
 }
 
@@ -156,11 +149,17 @@ function wsSendMessage(websocket, message) {
  * @param {Object} message - The parsed message object from the server
  */
 function wsReceiveMessage(message) {
-    console.log('Received message:' + JSON.stringify(message));
+    console.log(`Received message of type ${message.event_type}`, message);
 
     // TODO 2.3: Use a switch statement on message.event_type
     // Handle the following cases (start with just these, add more later):
-
+    switch (message.event_type) {
+      case WS_EVENT_TYPES.message:
+        break;
+      case WS_EVENT_TYPES.message_history:
+        break;
+      // TODO: Add all cases here
+    }
     // CASE: 'message'
     // - Check if message is from self or other user
     // - If from others, call: window.addMessageToUI(message.message, "other", message.username)
