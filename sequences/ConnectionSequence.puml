@@ -21,7 +21,6 @@ else connection failure
         1. Username contains invalid characters
         2. Username is too long (> 20 characters)
         3. Username is already taken
-        4. Room does not exist (specified in websocket address)
     end note
 end
 
@@ -46,21 +45,22 @@ Server -> OtherClients: Broadcast(WsTypingEvent(username, is_typing=false))
 Client -> Server : WsRoomCreate(room_info)
 alt room created successfully
     Server -> OtherClients : BroadcastToAllRooms(WsRoomCreate)
+    Server -> Client : WsRoomCreate(room_info)
 else error, or room already exists
-    Server -> Client : WsSystemMessage(message, severity=error)
+    Server -> Client : WsRoomCreateReject(message, severity=error)
 end
 
 == Room Switch ==
 Client -> Server : WsRoomSwitchRequest(room_name)
 
 alt room switch successful
+    Server -> OtherClients: Broadcast(WsUserLeaveEvent(username, old_room_name))
     Server -> Client : WsRoomSwitchResponse(room_name)
     Server -> Client : WsMessageHistory(List(Message))
     Server -> Client : WsUsersOnline(List(WsUserStatus))
-    Server -> OtherClients: Broadcast(WsUserLeaveEvent(username, room_name))
     Server -> OtherClients: Broadcast(WsUserJoinEvent(username, room_name))
 else room switch failure
-    Server -> Client : WsSystemMessage(message, severity=error)
+    Server -> Client : WsRoomSwitchReject(error)
 end
 
 @enduml
