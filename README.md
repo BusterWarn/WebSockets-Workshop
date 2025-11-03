@@ -102,6 +102,10 @@ In the case of the room switching, the `WsUserLeaveEvent` will be broadcast to t
 
 ![Message Sequences](sequences/out/ConnectionSequence/ConnectionSequence.png "Message Sequences")
 
+
+### Example JSON Messages
+
+
 ## Available Helper Functions
 You may use these helper functions:
 
