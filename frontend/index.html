@@ -1077,7 +1077,7 @@
                 } else {
                     wsSendMessage(globalThis.websocket, message);
                 }
-                addMessageToUI(message, 'own');
+                addMessageToUI(message, window.chatConfig.username);
                 messageInput.value = '';
             } catch (error) {
                 Toast.error(`Error sending message: ${error}`);
@@ -1085,13 +1085,14 @@
             scrollToBottom();
         }
 
-        function addMessageToUI(message, type, username = null, currentTime = dayjs().format('h:mm A')) {
+        function addMessageToUI(message, username, currentTime = dayjs().format('h:mm A')) {
+            const isMessageOwn = username === window.chatConfig.username;
             const shouldScroll = shouldAutoScroll();
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type === 'own' ? 'message-own' : ''}`;
+            messageDiv.className = `message ${isMessageOwn ? 'message-own' : ''}`;
 
             let messageHTML = '';
-            if (type === 'own') {
+            if (isMessageOwn) {
                 messageHTML = `
                     <div class="message-bubble own">
                         ${message}
@@ -1252,9 +1253,8 @@
             const messages = response.messages;
 
             messages.forEach((msg, index) => {
-                const type = msg.username === window.chatConfig.username ? 'own' : 'other';
                 const timestamp = dayjs(msg.timestamp).format('h:mm A');
-                addMessageToUI(msg.message, type, msg.username, timestamp);
+                addMessageToUI(msg.message, msg.username, timestamp);
             });
         });
 

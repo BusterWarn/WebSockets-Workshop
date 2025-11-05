@@ -162,7 +162,7 @@ function wsReceiveMessage(message) {
     }
     // CASE: 'message'
     // - Check if message is from self or other user
-    // - If from others, call: window.addMessageToUI(message.message, "other", message.username)
+    // - If from others, call: window.addMessageToUI(message.message, message.username)
     // Hint: Compare message.username === window.chatConfig.username
 
 
