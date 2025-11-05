@@ -2,10 +2,10 @@
  * WebSockets Workshop - Student Implementation File
  *
  * This file contains the WebSocket client implementation that you'll complete
- * through 5 progressive assignments. Read the Python server code to understand
- * the WebSocket protocol and message structures.
+ * through 5 progressive assignments.
  *
  * Server code reference: server.py, websocket_handlers.py, message_types.py
+ *      Only if you're interested, reading the server code is not mandatory!
  */
 
 // =============================================================================
@@ -27,6 +27,9 @@ globalThis.CONFIG = {
     // Set to true if you want to use https instead of http, will also use
     // wss instead of ws when true
     use_https: true,
+    // Set to true if you want to use the REST API instead of the WebSocket API
+    // Note that the REST API is not the main focus, but it is provided for
+    // the sake of comparison.
     use_rest: true,
 };
 
@@ -62,9 +65,11 @@ const WS_EVENT_TYPES = {
     user_leave: 'user_leave',
     all_rooms: 'all_rooms',
     room_create: 'room_create',
+    room_create_reject: 'room_create_reject',
     room_chat_clear: 'room_chat_clear',
     room_switch_request: 'room_switch_request',
     room_switch_response: 'room_switch_response',
+    room_switch_reject: 'room_switch_reject',
 };
 
 
@@ -115,6 +120,8 @@ function wsConnectUser(websocket, username) {
 
 /**
  * ASSIGNMENT 2a: Send a chat message through WebSocket
+ * This function is invoked by the UI when you send a message (i.e. press enter or click send)
+ * via the text input field.
  *
  * Server reference:
  * - websocket_handlers.py: WebSocketConnection.send_message()
@@ -125,8 +132,8 @@ function wsConnectUser(websocket, username) {
  */
 function wsSendMessage(websocket, message) {
     if (!websocket || websocket.CLOSED) {
-      Toast.error('WebSocket connection not established');
-      return;
+        Toast.error('WebSocket connection not established');
+        return;
     }
 
 
@@ -142,9 +149,7 @@ function wsSendMessage(websocket, message) {
 
 /**
  * ASSIGNMENT 2b: Handle incoming WebSocket messages
- *
- * Server reference: Look at all Ws* classes in message_types.py to understand
- * the different event types and their structure
+ * Should be invoked by your message handler whenever a message is received from the server.
  *
  * @param {Object} message - The parsed message object from the server
  */
@@ -154,11 +159,11 @@ function wsReceiveMessage(message) {
     // TODO 2.3: Use a switch statement on message.event_type
     // Handle the following cases (start with just these, add more later):
     switch (message.event_type) {
-      case WS_EVENT_TYPES.message:
-        break;
-      case WS_EVENT_TYPES.message_history:
-        break;
-      // TODO: Add all cases here
+        case WS_EVENT_TYPES.message:
+            break;
+        case WS_EVENT_TYPES.message_history:
+            break;
+        // TODO: Add all cases here
     }
     // CASE: 'message'
     // - Check if message is from self or other user
@@ -189,11 +194,6 @@ function wsReceiveMessage(message) {
 
 /**
  * ASSIGNMENT 3: Handle user presence notifications
- *
- * Server reference:
- * - websocket_handlers.py: WebSocketManager.join_chat() broadcasts user_join
- * - websocket_handlers.py: WebSocketConnection.close() broadcasts user_leave
- * - message_types.py: WsUserJoinEvent, WsUserLeaveEvent, WsUsersOnline
  *
  * TODO 3.1: Add to the switch statement in wsReceiveMessage():
  *
@@ -227,10 +227,6 @@ function wsReceiveMessage(message) {
 
 /**
  * ASSIGNMENT 4: Implement typing indicators
- *
- * Server reference:
- * - websocket_handlers.py: WebSocketConnection.receive_loop() handles typing events
- * - message_types.py: WsTypingEvent
  *
  * The typing indicator works with a simple timeout mechanism:
  * - When user types, send is_typing: true
@@ -285,25 +281,39 @@ window.setInterval(() => {
 /**
  * ASSIGNMENT 5: Implement room switching and management
  *
- * Server reference:
- * - websocket_handlers.py: switch_room_for_user()
- * - message_types.py: WsRoomSwitchRequest, WsRoomSwitchResponse, WsAllRooms, WsRoomCreate
  */
 
 /**
- * TODO 5.1: Send room switch request
+ * TODO 5.1: Send room create request
+ * The room_create message is used to create a new room on the server.
+ * This is invoked by the UI after submitting a room name in the room creation prompt.
+ *
+ * @param {WebSocket} websocket - The active WebSocket connection
+ * @param {string} roomName - The name of the room to create
+ */
+function wsSendRoomCreate(websocket, roomName) {
+    // Note that there is no special confirmation for room_create messages.
+    // Instead, the same room_create will be sent back to the client on success.
+    // The WS_EVENT_TYPES.room_create_reject will be sent back to the client on failure, e.g. due to invalid room name
+}
+
+
+/**
+ * TODO 5.2: Send room switch request
+ * This is invoked by the UI code when a room from the room list is clicked.
  *
  * @param {WebSocket} websocket - The active WebSocket connection
  * @param {string} roomName - The name of the room to switch to
  */
 function wsSendRoomSwitchReq(websocket, roomName) {
+
     // TODO: Send room_switch_request event
     // Structure: { event_type: 'room_switch_request', room_name: roomName }
 
 }
 
 /**
- * TODO 5.2: Send room chat clear request
+ * TODO 5.3: Send room chat clear request
  *
  * @param {WebSocket} websocket - The active WebSocket connection
  * @param {string} roomName - The name of the room to clear
@@ -315,7 +325,7 @@ function wsSendRoomChatClear(websocket, roomName) {
 }
 
 /**
- * TODO 5.3: Handle room-related events in wsReceiveMessage()
+ * TODO 5.4: Handle room-related events in wsReceiveMessage()
  *
  * Add these cases to the switch statement:
  *
@@ -368,5 +378,7 @@ function createToastForSeverity(message, severity) {
 // EXPORTS (PROVIDED)
 // =============================================================================
 // Make functions available globally for the HTML file to use
+// These are all invoked by the UI code for you
 window.wsSendRoomSwitchReq = wsSendRoomSwitchReq;
 window.wsSendRoomChatClear = wsSendRoomChatClear;
+window.wsSendRoomCreate = wsSendRoomCreate;
