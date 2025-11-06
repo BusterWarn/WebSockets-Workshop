@@ -84,7 +84,7 @@ const WS_EVENT_TYPES = {
  * @param {string} serverUrl - The WebSocket server URL (e.g., "ws://localhost:5000/ws")
  * @param {string} username - Your username from config
  */
-function wsConnectUser(websocket, username) {
+function wsConnectUser(serverUrl, username) {
     try {
         // TODO: Create a new WebSocket connection to serverUrl
         // Hint: globalThis.websocket = new WebSocket(serverUrl);
