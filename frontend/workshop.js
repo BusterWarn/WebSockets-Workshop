@@ -156,35 +156,63 @@ function wsSendMessage(websocket, message) {
 function wsReceiveMessage(message) {
     console.log(`Received message of type ${message.event_type}`, message);
 
-    // TODO 2.3: Use a switch statement on message.event_type
-    // Handle the following cases (start with just these, add more later):
     switch (message.event_type) {
+        // ASSIGNMENT 2
+        // GUI functions to call:
+        //  - window.addMessageToUI(message: <string>, username: <string>)
+        //  - createToastForSeverity(message : <string>, message: <string>)
         case WS_EVENT_TYPES.message:
             break;
         case WS_EVENT_TYPES.message_history:
             break;
-        // TODO: Add all cases here
+        case WS_EVENT_TYPES.connection_reject:
+            break;
+
+        // ASSIGNMENT 3: User presence notifications
+        // GUI functions to call:
+        // - window.addSelfAsOnline(),
+        // - window.addMemberToList(username: <string>, status: <string>),
+        // - window.updateOnlineCount()
+        // - createToastForSeverity(message : <string>, message: <string>)
+        case WS_EVENT_TYPES.users_online:
+            break;
+        case WS_EVENT_TYPES.user_join:
+            break;
+        case WS_EVENT_TYPES.user_leave:
+            break;
+        case WS_EVENT_TYPES.system:
+            break;
+
+        // ASSIGNMENT 4: Typing indicators
+        // GUI functions to call:
+        // - updateMemberStatus(username: <string>, status: <string>)
+        // - createToastForSeverity(message : <string>, message: <string>)
+        case WS_EVENT_TYPES.typing:
+            break;
+
+        // ASSIGNMENT 5: Room management
+        // GUI functions to call:
+        // - createToastForSeverity(message : <string>, message: <string>)
+        // - addRoomToList(roomName: <string>, isActive: <boolean>)
+        // - window.switchToRoom(roomName: <string>)
+        // - window.clearChat(roomName: <string>)
+        // - createToastForSeverity(message : <string>, message: <string>)
+        case WS_EVENT_TYPES.all_rooms:
+            break;
+        case WS_EVENT_TYPES.room_create:
+            break;
+        case WS_EVENT_TYPES.room_create_reject:
+            break;
+        case WS_EVENT_TYPES.room_switch_response:
+            break;
+        case WS_EVENT_TYPES.room_switch_reject:
+            break;
+        case WS_EVENT_TYPES.room_chat_clear:
+            break;
+
+        default:
+            console.error('Received unknown message:' + JSON.stringify(message));
     }
-    // CASE: 'message'
-    // - Check if message is from self or other user
-    // - If from others, call: window.addMessageToUI(message.message, message.username)
-    // Hint: Compare message.username === window.chatConfig.username
-
-
-    // CASE: 'message_history'
-    // - Loop through message.messages array
-    // - For each msg, determine if it's "own" or "other"
-    // - Call window.addMessageToUI for each message
-
-
-    // CASE: 'connection_reject'
-    // - Show error toast with message.response
-    // Hint: Toast.error(message.response)
-
-
-    // For now, log any unhandled message types
-
-
 }
 
 
@@ -280,7 +308,6 @@ window.setInterval(() => {
 
 /**
  * ASSIGNMENT 5: Implement room switching and management
- *
  */
 
 /**
@@ -306,7 +333,6 @@ function wsSendRoomCreate(websocket, roomName) {
  * @param {string} roomName - The name of the room to switch to
  */
 function wsSendRoomSwitchReq(websocket, roomName) {
-
     // TODO: Send room_switch_request event
     // Structure: { event_type: 'room_switch_request', room_name: roomName }
 
