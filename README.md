@@ -31,6 +31,145 @@ WebSocket docs from MDN: [Writing WebSocket client applications](https://develop
 
 New to JavaScript? Use a cheat sheet: [htmlcheatsheet.com/js/](https://htmlcheatsheet.com/js/).
 
+<details>
+<summary><b>Variables & Types</b></summary>
+
+```javascript
+let x = 5;              // block scope, reassignable
+const y = 10;           // block scope, constant
+var z = 15;             // function scope (avoid!)
+```
+
+**Dynamic Typing:**
+- No `int`, `float`, `char` - just `number`, `string`, `boolean`
+
+```javascript
+typeof 42;              // "number"
+typeof "hello";         // "string"
+typeof true;            // "boolean"
+```
+
+**Special Values:**
+```javascript
+null                    // intentional absence
+undefined               // not yet assigned
+```
+
+</details>
+
+---
+
+<details>
+<summary><b>Functions</b></summary>
+
+**Function Declaration:**
+```javascript
+function add(a, b) {
+    return a + b;
+}
+```
+
+**Arrow (lambda) Functions:**
+```javascript
+const add = (a, b) => a + b;
+const square = x => x * x;
+```
+
+</details>
+
+---
+
+<details>
+<summary><b>Objects & Arrays</b></summary>
+
+**Object Literals:**
+```javascript
+const message = {
+    event_type: "message",
+    username: "Alice",
+    message: "Hello!",
+};
+
+message.username;           // "Alice" - dot notation
+message["event_type"];      // "message" - bracket notation
+```
+
+**Arrays (dynamic, mixed types):**
+```javascript
+const users = ["Alice", "Bob", "Charlie"];
+const messages = [
+    { username: "Alice", message: "Hi!" },
+    { username: "Bob", message: "Hello!" }
+];
+
+users.push("Dave");         // add to end
+users.length;               // 4
+```
+
+**Array Methods:**
+```javascript
+// forEach - iterate over each item (MOST USEFUL!)
+users.forEach(user => console.log(user));
+
+// map - transform each element
+const upperNames = users.map(name => name.toUpperCase());
+
+// filter - select matching elements
+const activeUsers = users.filter(user => user.status === "online");
+
+// reduce - accumulate into single value
+const totalMessages = rooms.reduce((sum, room) => sum + room.messageCount, 0);
+```
+</details>
+
+---
+
+<details>
+<summary><b>JSON (JavaScript Object Notation)</b></summary>
+JSON is a text format for data exchange - critical for WebSockets/APIs
+
+Converting Objects ↔ JSON:
+```javascript
+const msgObject = {
+    event_type: "message",
+    username: "Alice",
+    message: "Hello!"
+};
+
+// Object → JSON string (for sending over network)
+const jsonString = JSON.stringify(msgObject);
+// '{"event_type":"message","username":"Alice","message":"Hello!"}'
+
+websocket.send(jsonString);  // send as string
+
+// JSON string → Object (when receiving from network)
+const received = '{"event_type":"message","username":"Bob"}';
+const msgObject2 = JSON.parse(received);
+console.log(msgObject2.username);  // "Bob"
+```
+
+Real WebSocket Example:
+```javascript
+const msgObject = {
+    event_type: "message",
+    username: "Alice",
+    message: "Hello!"
+};
+
+// Object → JSON string (for sending over network)
+const jsonString = JSON.stringify(msgObject);
+// '{"event_type":"message","username":"Alice","message":"Hello!"}'
+
+websocket.send(jsonString);  // send as string
+
+// JSON string → Object (when receiving from network)
+const received = '{"event_type":"message","username":"Bob"}';
+const msgObject2 = JSON.parse(received);
+console.log(msgObject2.username);  // "Bob"
+```
+
+</details>
+
 ### Messages and Events
 
 The messages that you will send and receive are defined in the backend directory, `backend/message_types.py`.
