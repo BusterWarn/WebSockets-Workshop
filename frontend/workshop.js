@@ -30,7 +30,7 @@ globalThis.CONFIG = {
     // Set to true if you want to use the REST API instead of the WebSocket API
     // Note that the REST API is not the main focus, but it is provided for
     // the sake of comparison.
-    use_rest: true,
+    use_rest: false,
 };
 
 
@@ -80,6 +80,7 @@ const WS_EVENT_TYPES = {
 /**
  * ASSIGNMENT 1 - Create Websocket and assign to globalThis.websocket.
  *                Add event listeners: 'open', 'error', 'close', 'message'
+ * This function is invoked by the UI on page load.
  *
  * @param {string} serverUrl - The WebSocket server URL (e.g., "ws://localhost:5000/ws")
  * @param {string} username - Your username from config
