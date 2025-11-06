@@ -250,13 +250,13 @@ You may use these helper functions:
 
 ### UI Functions
 ```javascript
-window.addMessageToUI(message, type, username)
-window.addMemberToList(username, status)
-window.removeMemberFromList(username)
+window.addMessageToUI(message: string, username: string)
+window.addMemberToList(username: string, status: string)
+window.removeMemberFromList(username: string)
 window.updateOnlineCount()
-window.addRoomToList(roomName, isActive)
-window.switchToRoom(roomName)
-window.clearChat(roomName)
+window.addRoomToList(roomName: string, isActive: boolean)
+window.switchToRoom(roomName: string)
+window.clearChat(roomName: string)
 window.addSelfAsOnline()
 ```
 
