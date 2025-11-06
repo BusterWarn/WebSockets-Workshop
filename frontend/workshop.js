@@ -160,12 +160,13 @@ function wsReceiveMessage(message) {
         // ASSIGNMENT 2
         // GUI functions to call:
         //  - window.addMessageToUI(message: <string>, username: <string>)
-        //  - createToastForSeverity(message : <string>, message: <string>)
         case WS_EVENT_TYPES.message:
             break;
         case WS_EVENT_TYPES.message_history:
             break;
+
         case WS_EVENT_TYPES.connection_reject:
+            Toast.error(message.response);
             break;
 
         // ASSIGNMENT 3: User presence notifications
@@ -173,39 +174,41 @@ function wsReceiveMessage(message) {
         // - window.addSelfAsOnline(),
         // - window.addMemberToList(username: <string>, status: <string>),
         // - window.updateOnlineCount()
-        // - createToastForSeverity(message : <string>, message: <string>)
         case WS_EVENT_TYPES.users_online:
             break;
         case WS_EVENT_TYPES.user_join:
+            Toast.info(`User ${undefined} joined the chat`);
             break;
         case WS_EVENT_TYPES.user_leave:
+            Toast.info(`User ${undefined} left the chat`);
             break;
         case WS_EVENT_TYPES.system:
+            createToastForSeverity(message.message, message.severity);
             break;
 
         // ASSIGNMENT 4: Typing indicators
         // GUI functions to call:
         // - updateMemberStatus(username: <string>, status: <string>)
-        // - createToastForSeverity(message : <string>, message: <string>)
         case WS_EVENT_TYPES.typing:
             break;
 
         // ASSIGNMENT 5: Room management
         // GUI functions to call:
-        // - createToastForSeverity(message : <string>, message: <string>)
         // - addRoomToList(roomName: <string>, isActive: <boolean>)
         // - window.switchToRoom(roomName: <string>)
         // - window.clearChat(roomName: <string>)
-        // - createToastForSeverity(message : <string>, message: <string>)
         case WS_EVENT_TYPES.all_rooms:
             break;
         case WS_EVENT_TYPES.room_create:
+            Toast.info(`Room ${undefined} created by ${undefined}`);
             break;
         case WS_EVENT_TYPES.room_create_reject:
+            Toast.error(message.response);
             break;
         case WS_EVENT_TYPES.room_switch_response:
             break;
         case WS_EVENT_TYPES.room_switch_reject:
+            Toast.error(message.response);
             break;
         case WS_EVENT_TYPES.room_chat_clear:
             break;
@@ -243,9 +246,6 @@ function wsReceiveMessage(message) {
  * - Show info toast: Toast.info(`User ${message.username} left the chat`)
  * - Remove from members list: window.removeMemberFromList(message.username)
  * - Update online count
- *
- * CASE: 'system'
- * - Call: createToastForSeverity(message.message, message.severity)
  */
 
 
