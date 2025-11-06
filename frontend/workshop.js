@@ -49,8 +49,8 @@ globalThis.isTyping = false;
 globalThis.GLOBAL_ROOM_NAME = "Global";
 
 /**
- * WebSocket event types - These match the message_types.py on the server
- * Refer to the WsEvent union type in message_types.py to see all possible events
+ * WebSocket event types - These are the message types that the server and client will send to each other. The messages have an event_type field that identifies the type of message.
+ * Refer to the Messages.md file for examples of each message type.
  */
 const WS_EVENT_TYPES = {
     connection_request: 'connection_request',
@@ -123,10 +123,6 @@ function wsConnectUser(serverUrl, username) {
  * ASSIGNMENT 2a: Send a chat message through WebSocket
  * This function is invoked by the UI when you send a message (i.e. press enter or click send)
  * via the text input field.
- *
- * Server reference:
- * - websocket_handlers.py: WebSocketConnection.send_message()
- * - message_types.py: WsMessage
  *
  * @param {WebSocket} websocket - The active WebSocket connection
  * @param {string} message - The message text to send
